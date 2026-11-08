@@ -1,0 +1,11 @@
+diff --git a/third_party/blink/renderer/core/BUILD.gn b/third_party/blink/renderer/core/BUILD.gn
+--- a/third_party/blink/renderer/core/BUILD.gn
++++ b/third_party/blink/renderer/core/BUILD.gn
+@@ -407,6 +407,7 @@
+     ":generate_eventhandler_names",
+     ":make_deprecation_info",
+     ":xml_ffi",
++    "//simprint/fingerprint",
+     "//base",
+     "//components/paint_preview/common",
+     "//components/performance_manager/public/mojom:mojom_blink",

@@ -1,0 +1,44 @@
+diff --git a/content/browser/web_contents/web_contents_impl.cc b/content/browser/web_contents/web_contents_impl.cc
+--- a/content/browser/web_contents/web_contents_impl.cc
++++ b/content/browser/web_contents/web_contents_impl.cc
+@@ -3,6 +3,10 @@
+ // found in the LICENSE file.
+ 
+ #include "content/browser/web_contents/web_contents_impl.h"
++#include "base/strings/string_number_conversions.h"
++#include "services/device/public/cpp/geolocation/geoposition.h"
++#include "services/device/public/mojom/geoposition.mojom.h"
++#include "simprint/config/fingerprint_config_storage.h"
+ 
+ #include <stddef.h>
+ 
+@@ -6689,6 +6693,29 @@
+     GetDeviceService().BindGeolocationContext(
+         geolocation_context_.BindNewPipeAndPassReceiver());
+   }
++
++  // Simprint: serve the configured position to every frame of this tab. Auto-granting the
++  // permission is not enough: without an OS location source the request would never
++  // complete. This runs on every call (SetOverride is idempotent) instead of only when the
++  // context is created, because the first tab's context can be created before the
++  // fingerprint config has been applied.
++  const std::string simprint_geo = simprint::config::GetGeolocation();
++  const size_t simprint_comma = simprint_geo.find(',');
++  double simprint_lat = 0;
++  double simprint_lon = 0;
++  if (simprint_comma != std::string::npos &&
++      base::StringToDouble(simprint_geo.substr(0, simprint_comma), &simprint_lat) &&
++      base::StringToDouble(simprint_geo.substr(simprint_comma + 1), &simprint_lon)) {
++    auto position = device::mojom::Geoposition::New();
++    position->latitude = simprint_lat;
++    position->longitude = simprint_lon;
++    position->accuracy = 30;  // metres, a typical Wi-Fi based fix
++    position->timestamp = base::Time::Now();
++    if (device::ValidateGeoposition(*position)) {
++      geolocation_context_->SetOverride(
++          device::mojom::GeopositionResult::NewPosition(std::move(position)));
++    }
++  }
+   return geolocation_context_.get();
+ }
+ 

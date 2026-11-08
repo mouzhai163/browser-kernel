@@ -1,0 +1,11 @@
+diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -2479,6 +2479,7 @@
+     "//services/preferences/public/cpp",
+     "//services/preferences/tracked",
+     "//services/service_manager/public/cpp",
++    "//simprint",
+     "//skia",
+     "//sql",
+     "//storage/browser",

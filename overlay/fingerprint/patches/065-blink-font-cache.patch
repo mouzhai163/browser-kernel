@@ -1,0 +1,35 @@
+diff --git a/third_party/blink/renderer/platform/fonts/font_cache.cc b/third_party/blink/renderer/platform/fonts/font_cache.cc
+index a674a149623df..2f6c81677a3cf 100644
+--- a/third_party/blink/renderer/platform/fonts/font_cache.cc
++++ b/third_party/blink/renderer/platform/fonts/font_cache.cc
+@@ -48,6 +48,11 @@
+ #include "third_party/blink/renderer/platform/fonts/alternate_font_family.h"
+ #include "third_party/blink/renderer/platform/fonts/font_cache_client.h"
+ #include "third_party/blink/renderer/platform/fonts/font_data_cache.h"
++
++// Simprint
++#include "simprint/config/fingerprint_config_storage.h"
++#include "base/logging.h"
++#include <algorithm>
+ #include "third_party/blink/renderer/platform/fonts/font_description.h"
+ #include "third_party/blink/renderer/platform/fonts/font_fallback_map.h"
+ #include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
+@@ -163,6 +168,18 @@ const SimpleFontData* FontCache::GetFontData(
+     const FontDescription& font_description,
+     const AtomicString& family,
+     AlternateFontName altername_font_name) {
++  // Simprint: 系统字体白名单。网页字体（@font-face）不经过这里，不受影响。
++  bool is_generic = family == font_family_names::kSerif ||
++                    family == font_family_names::kSansSerif ||
++                    family == font_family_names::kMonospace ||
++                    family == font_family_names::kCursive ||
++                    family == font_family_names::kFantasy ||
++                    family == font_family_names::kSystemUi ||
++                    family.empty();
++  if (!is_generic && !simprint::config::IsSystemFontAllowed(family.Utf8())) {
++    return nullptr;
++  }
++
+   if (const FontPlatformData* platform_data = GetFontPlatformData(
+           font_description,
+           FontFaceCreationParams(

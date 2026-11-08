@@ -1,0 +1,25 @@
+diff --git a/chrome/install_static/chromium_install_modes.h b/chrome/install_static/chromium_install_modes.h
+--- a/chrome/install_static/chromium_install_modes.h
++++ b/chrome/install_static/chromium_install_modes.h
+@@ -11,2 +11,3 @@
+ 
++#include "build/branding_buildflags.h"
+ #include "chrome/app/chrome_dll_resource.h"
+@@ -23,3 +24,7 @@
+ // and user data directory paths.
+-inline constexpr wchar_t kProductPathName[] = L"Chromium";
++#if BUILDFLAG(SIMPRINT_BRANDING)
++inline constexpr wchar_t kProductPathName[] = L"Simprint Browser";
++#else
++inline constexpr wchar_t kProductPathName[] = L"Chromium";
++#endif
+ 
+@@ -26,3 +31,7 @@
+ // The brand-specific safe browsing client name.
+-inline constexpr char kSafeBrowsingName[] = "chromium";
++#if BUILDFLAG(SIMPRINT_BRANDING)
++inline constexpr char kSafeBrowsingName[] = "simprint";
++#else
++inline constexpr char kSafeBrowsingName[] = "chromium";
++#endif
+ 

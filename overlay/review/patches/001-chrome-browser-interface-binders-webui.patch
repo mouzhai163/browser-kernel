@@ -1,0 +1,22 @@
+diff --git a/chrome/browser/chrome_browser_interface_binders_webui.cc b/chrome/browser/chrome_browser_interface_binders_webui.cc
+--- a/chrome/browser/chrome_browser_interface_binders_webui.cc
++++ b/chrome/browser/chrome_browser_interface_binders_webui.cc
+@@ -27,6 +27,8 @@
+ #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
+ #include "chrome/browser/ui/webui/location_internals/location_internals.mojom.h"
+ #include "chrome/browser/ui/webui/location_internals/location_internals_ui.h"
++#include "chrome/browser/ui/webui/review/review_page.mojom.h"
++#include "chrome/browser/ui/webui/review/review_ui.h"
+ #include "chrome/browser/ui/webui/media/media_engagement_ui.h"
+ #include "chrome/browser/ui/webui/omnibox/aim_eligibility/aim_eligibility.mojom.h"
+ #include "chrome/browser/ui/webui/omnibox/omnibox_internals.mojom.h"
+@@ -416,6 +418,9 @@
+   map->Add<tracked_element::mojom::TrackedElementHandler>(
+       base::BindRepeating(&BindTrackedElementHandlerRestricted));
+ 
++  RegisterWebUIControllerInterfaceBinder<mojom::review_page::ReviewPageHandler,
++                                         ReviewUI>(map);
++
+   // End of PopulateChromeWebUIFrameBindersPartsAllPlatforms().
+   // Please do not add platform-specific logic to this function.
+ }

@@ -1,0 +1,19 @@
+diff --git a/chrome/browser/resources/BUILD.gn b/chrome/browser/resources/BUILD.gn
+--- a/chrome/browser/resources/BUILD.gn
++++ b/chrome/browser/resources/BUILD.gn
+@@ -484,6 +484,7 @@
+       "multistep_filter_internals:resources",
+       "on_device_internals:resources",
+       "page_action_internals:resources",
++      "review:resources",
+       "user_education_internals:resources",
+       "webnn_internals:resources",
+       "webui_js_error:resources",
+@@ -577,6 +578,7 @@
+       "$root_gen_dir/chrome/multistep_filter_internals_resources.pak",
+       "$root_gen_dir/chrome/on_device_internals_resources.pak",
+       "$root_gen_dir/chrome/page_action_internals_resources.pak",
++      "$root_gen_dir/chrome/review_resources.pak",
+       "$root_gen_dir/chrome/user_education_internals_resources.pak",
+       "$root_gen_dir/chrome/webui_js_error_resources.pak",
+     ]

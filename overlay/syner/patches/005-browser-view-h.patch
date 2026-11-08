@@ -1,0 +1,108 @@
+diff --git a/chrome/browser/ui/views/frame/browser_view.h b/chrome/browser/ui/views/frame/browser_view.h
+--- a/chrome/browser/ui/views/frame/browser_view.h
++++ b/chrome/browser/ui/views/frame/browser_view.h
+@@ -36,6 +36,7 @@
+ #include "chrome/browser/ui/views/frame/contents_container_view.h"
+ #include "chrome/browser/ui/views/frame/layout/browser_view_layout_params.h"
+ #include "chrome/browser/ui/views/frame/shadow_overlay_view.h"
++#include "chrome/browser/ui/views/frame/sync_input_capture_handler.h"
+ #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
+ #include "chrome/browser/ui/views/frame/vertical_tab_strip_background_blur_backdrop.h"
+ #include "chrome/browser/ui/views/tabs/tab.h"
+@@ -60,6 +61,7 @@
+ #include "ui/base/pointer/touch_ui_controller.h"
+ #include "ui/gfx/native_ui_types.h"
+ #include "ui/views/controls/button/button.h"
++#include "ui/aura/client/transient_window_client_observer.h"
+ #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
+ #include "ui/views/interaction/view_subregion_anchor.h"
+ #include "ui/views/widget/widget_delegate.h"
+@@ -104,6 +106,10 @@ class TopControlsSlideControllerTest;
+ class VerticalTabStripRegionView;
+ class WebAppFrameToolbarView;
+ 
++namespace aura {
++class Window;
++}  // namespace aura
++
+ namespace gfx {
+ class AnimationRunner;
+ }  // namespace gfx
+@@ -143,7 +149,8 @@ class BrowserView : public BrowserWindow,
+                     public ImmersiveModeController::Observer,
+                     public GlobalErrorObserver,
+                     public views::FocusChangeListener,
+-                    public BookmarkBarController::Delegate {
++                    public BookmarkBarController::Delegate,
++                    public aura::client::TransientWindowClientObserver {
+   METADATA_HEADER(BrowserView, views::ClientView)
+ 
+  public:
+@@ -688,6 +695,9 @@ class BrowserView : public BrowserWindow,
+   void OnWidgetMove() override;
+   views::Widget* GetWidget() override;
+   const views::Widget* GetWidget() const override;
++
++  // 同步重放用：返回 [主窗 RootView, 弹出层1 RootView, …]，与主控 root_index 对应。
++  std::vector<views::View*> GetSyncReplayRootViews();
+   void GetAccessiblePanes(std::vector<View*>* panes) override;
+   bool ShouldDescendIntoChildForEventHandling(
+       gfx::NativeView child,
+@@ -719,6 +729,12 @@ class BrowserView : public BrowserWindow,
+   // infobars::InfoBarContainer::Delegate:
+   void InfoBarContainerStateChanged(bool is_animating) override;
+ 
++  // aura::client::TransientWindowClientObserver:
++  void OnTransientChildWindowAdded(aura::Window* parent,
++                                  aura::Window* transient_child) override;
++  void OnTransientChildWindowRemoved(aura::Window* parent,
++                                    aura::Window* transient_child) override;
++
+   // views::View:
+   void Layout(PassKey) override;
+   void OnGestureEvent(ui::GestureEvent* event) override;
+@@ -860,6 +876,24 @@ class BrowserView : public BrowserWindow,
+   // web contents.
+   void ShowSplitView(bool focus_active_view);
+ 
++  class SyncInputPopupRootsObserver;
++
++  // Called from ChromeViewsDelegate::OnWidgetInitialized for popups (e.g. menu)
++  // that don't go through Transient; attach sync handler to their root.
++  void OnSyncInputWidgetInitialized(views::Widget* widget);
++
++  // Detaches the sync input capture handler from all windows/views it was
++  // attached to (called from OnWidgetDestroying() and the destructor).
++  void DetachSyncInputCapture();
++
++  // 在活动 WebContents 的 aura 窗口上挂载/摘除 SyncInputCaptureHandler，确保网页渲染区内鼠标事件可同步
++  void EnsureSyncCaptureOnActiveWebContents();
++
++  // 供 SyncInputCaptureHandler 回调：根据事件所在窗口返回 (RootView, root_index)。
++  std::pair<views::View*, size_t> GetSyncCaptureRootViewAndIndexForEvent(
++      ui::LocatedEvent* event);
++  std::pair<views::View*, size_t> GetSyncCaptureRootViewAndIndexForKeyEvent(
++      ui::Event* event);
+   // Display only the current active tab's web contents, hiding any previous
+   // side-by-side display.
+   void HideSplitView();
+@@ -1207,6 +1241,19 @@ class BrowserView : public BrowserWindow,
+ 
+   std::unique_ptr<TabSearchBubbleHost> tab_search_bubble_host_;
+ 
++  // 同步输入捕获：主控时全窗口捕获鼠标事件并发送 SyncInputEvent
++  std::unique_ptr<SyncInputCaptureHandler> sync_input_capture_handler_;
++  raw_ptr<views::View> root_view_for_sync_capture_ = nullptr;
++  raw_ptr<aura::Window> native_window_for_sync_capture_ = nullptr;
++  raw_ptr<aura::Window> sync_capture_content_window_ = nullptr;
++  // 活动标签页 WebContents 的 aura 窗口，用于捕获网页渲染区内的鼠标事件
++  raw_ptr<aura::Window> sync_capture_web_contents_window_ = nullptr;
++  std::vector<raw_ptr<aura::Window>> sync_capture_transient_roots_;
++  // 与 sync_capture_transient_roots_ 一一对应，弹出层 RootView；Widget 未就绪时为 nullptr。
++  std::vector<raw_ptr<views::View>> sync_capture_transient_root_views_;
++  // Observes popup roots (incl. those from OnWidgetInitialized) for destruction.
++  std::unique_ptr<SyncInputPopupRootsObserver> sync_capture_popup_roots_observer_;
++
+   // Separator between top container and contents.
+   // Note: when `SideBySide` feature is disabled, this separator is also
+   // used when not in `TopContainerOverlayView. Once the feature is fully

@@ -1,0 +1,92 @@
+diff --git a/third_party/blink/renderer/core/frame/local_dom_window.cc b/third_party/blink/renderer/core/frame/local_dom_window.cc
+--- a/third_party/blink/renderer/core/frame/local_dom_window.cc
++++ b/third_party/blink/renderer/core/frame/local_dom_window.cc
+@@ -137,6 +137,10 @@
+ #include "third_party/blink/renderer/core/scroll/scroll_promise_resolver.h"
+ #include "third_party/blink/renderer/core/scroll/scroll_types.h"
+ #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
++#include "simprint/fingerprint/screen_hardware_fingerprint.h"
++#include "simprint/config/fingerprint_config_storage.h"
++#include "third_party/blink/renderer/core/inspector/locale_controller.h"
++#include "third_party/blink/renderer/core/timezone/timezone_controller.h"
+ #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+ #include "third_party/blink/renderer/core/timing/event_timing.h"
+ #include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
+@@ -232,6 +236,52 @@
+       online_observer_handle_;
+ };
+ 
++namespace {
++
++// Simprint: make JS Date / Intl use the configured timezone instead of the OS one.
++// Uses Blink's own override mechanism (the one behind DevTools'
++// Emulation.setTimezoneOverride): it updates ICU, notifies V8 and all workers, and
++// survives host timezone change events. Runs once per renderer process, on the
++// first window (the fingerprint config is imported before any page is created).
++void ApplyConfiguredTimeZoneOnce() {
++  static bool done = false;
++  if (done) {
++    return;
++  }
++  const std::string timezone = simprint::config::GetTimezone();
++  if (timezone.empty()) {
++    return;
++  }
++  done = true;
++  static std::unique_ptr<TimeZoneController::TimeZoneOverride>* keep_alive =
++      new std::unique_ptr<TimeZoneController::TimeZoneOverride>();
++  TimeZoneController::TimeZoneOverrideResult result =
++      TimeZoneController::SetTimeZoneOverride(String::FromUtf8(timezone));
++  if (result.handle) {
++    *keep_alive = std::move(result.handle);
++  }
++}
++
++// Simprint: make Intl / toLocaleString follow the configured language instead of the
++// OS locale. base::i18n::SetICUDefaultLocale() alone is not enough: V8 caches its
++// default locale per isolate. LocaleController (DevTools' Emulation.setLocaleOverride
++// mechanism) updates ICU, resets the cache in every main-thread isolate and all workers.
++void ApplyConfiguredLocaleOnce() {
++  static bool done = false;
++  if (done) {
++    return;
++  }
++  const std::string language = simprint::config::GetLanguage();
++  if (language.empty()) {
++    return;
++  }
++  done = true;
++  LocaleController::instance().SetLocaleOverride(String::FromUtf8(language),
++                                                 /*is_claiming_override=*/false);
++}
++
++}  // namespace
++
+ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame, WindowAgent* agent)
+     : DOMWindow(frame),
+       ExecutionContext(agent->isolate(),
+@@ -255,7 +305,10 @@
+       token_(frame.GetLocalFrameToken()),
+       network_state_observer_(MakeGarbageCollected<NetworkStateObserver>(this)),
+       closewatcher_stack_(
+-          MakeGarbageCollected<CloseWatcher::WatcherStack>(this)) {}
++          MakeGarbageCollected<CloseWatcher::WatcherStack>(this)) {
++  ApplyConfiguredTimeZoneOnce();
++  ApplyConfiguredLocaleOnce();
++}
+ 
+ void LocalDOMWindow::BindContentSecurityPolicy() {
+   DCHECK(!GetContentSecurityPolicy()->IsBound());
+@@ -1940,6 +1993,12 @@
+ }
+ 
+ double LocalDOMWindow::devicePixelRatio() const {
++  // Simprint: 检查是否有指纹配置
++  double configured = simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredDevicePixelRatio();
++  if (configured > 0.0) {
++    return configured;
++  }
++
+   if (!GetFrame()) {
+     return 0.0;
+   }

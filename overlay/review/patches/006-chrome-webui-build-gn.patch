@@ -1,0 +1,11 @@
+diff --git a/chrome/browser/ui/webui/BUILD.gn b/chrome/browser/ui/webui/BUILD.gn
+--- a/chrome/browser/ui/webui/BUILD.gn
++++ b/chrome/browser/ui/webui/BUILD.gn
+@@ -52,6 +52,7 @@
+     ":ntp_tiles_internals_ui",
+     ":signin_internals_ui",
+     ":webui",
++    "//chrome/browser/ui/webui/review",
+     "//chrome/browser/actor/ui:actor_overlay",
+     "//chrome/browser/browser_actuator/internals",
+     "//chrome/browser/contextual_tasks:ui",

@@ -1,0 +1,90 @@
+diff --git a/third_party/blink/renderer/core/css/media_values.cc b/third_party/blink/renderer/core/css/media_values.cc
+--- a/third_party/blink/renderer/core/css/media_values.cc
++++ b/third_party/blink/renderer/core/css/media_values.cc
+@@ -9,6 +9,7 @@
+ #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+ #include "third_party/blink/renderer/core/css/media_feature_overrides.h"
+ #include "third_party/blink/renderer/core/css/media_values.h"
++#include "simprint/fingerprint/screen_hardware_fingerprint.h"
+ #include "third_party/blink/renderer/core/css/media_values_cached.h"
+ #include "third_party/blink/renderer/core/css/media_values_dynamic.h"
+ #include "third_party/blink/renderer/core/css/style_engine.h"
+@@ -164,6 +165,12 @@
+ 
+ int MediaValues::CalculateDeviceWidth(LocalFrame* frame) {
+   DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
++  // Simprint: 媒体查询 (device-width) 必须和 screen.width 一致，否则能读出真实显示器分辨率。
++  if (int configured =
++          simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredScreenWidth();
++      configured > 0) {
++    return configured;
++  }
+   const display::ScreenInfo& screen_info =
+       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
+   int device_width = screen_info.rect.width();
+@@ -176,6 +183,11 @@
+ 
+ int MediaValues::CalculateDeviceHeight(LocalFrame* frame) {
+   DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
++  if (int configured =
++          simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredScreenHeight();
++      configured > 0) {
++    return configured;
++  }
+   const display::ScreenInfo& screen_info =
+       frame->GetPage()->GetChromeClient().GetScreenInfo(*frame);
+   int device_height = screen_info.rect.height();
+@@ -193,6 +205,12 @@
+ }
+ 
+ float MediaValues::CalculateDevicePixelRatio(LocalFrame* frame) {
++  // Simprint: (resolution) / (-webkit-device-pixel-ratio) 必须和 window.devicePixelRatio 一致。
++  if (double configured =
++          simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredDevicePixelRatio();
++      configured > 0) {
++    return static_cast<float>(configured);
++  }
+   return frame->DevicePixelRatio();
+ }
+ 
+@@ -353,12 +371,20 @@
+     LocalFrame* frame) {
+   DCHECK(frame);
+   DCHECK(frame->GetSettings());
++  // Simprint: 桌面环境（触摸点配置为 0）只有 fine 指针 + hover；
++  // 否则 (pointer)/(any-pointer: coarse) 会暴露宿主机的触摸屏。
++  if (simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints() == 0) {
++    return mojom::blink::PointerType::kPointerFineType;
++  }
+   return frame->GetSettings()->GetPrimaryPointerType();
+ }
+ 
+ int MediaValues::CalculateAvailablePointerTypes(LocalFrame* frame) {
+   DCHECK(frame);
+   DCHECK(frame->GetSettings());
++  if (simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints() == 0) {
++    return static_cast<int>(mojom::blink::PointerType::kPointerFineType);
++  }
+   return frame->GetSettings()->GetAvailablePointerTypes();
+ }
+ 
+@@ -366,6 +392,9 @@
+     LocalFrame* frame) {
+   DCHECK(frame);
+   DCHECK(frame->GetSettings());
++  if (simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints() == 0) {
++    return mojom::blink::HoverType::kHoverHoverType;
++  }
+   return frame->GetSettings()->GetPrimaryHoverType();
+ }
+ 
+@@ -379,6 +408,9 @@
+ int MediaValues::CalculateAvailableHoverTypes(LocalFrame* frame) {
+   DCHECK(frame);
+   DCHECK(frame->GetSettings());
++  if (simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints() == 0) {
++    return static_cast<int>(mojom::blink::HoverType::kHoverHoverType);
++  }
+   return frame->GetSettings()->GetAvailableHoverTypes();
+ }
+ 

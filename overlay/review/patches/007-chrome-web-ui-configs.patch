@@ -1,0 +1,19 @@
+diff --git a/chrome/browser/ui/webui/chrome_web_ui_configs.cc b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
+--- a/chrome/browser/ui/webui/chrome_web_ui_configs.cc
++++ b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
+@@ -50,6 +50,7 @@
+ #include "chrome/browser/ui/webui/policy/policy_ui.h"
+ #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
+ #include "chrome/browser/ui/webui/regional_capabilities_internals/regional_capabilities_internals_ui.h"
++#include "chrome/browser/ui/webui/review/review_ui.h"
+ #include "chrome/browser/ui/webui/saved_tab_groups_unsupported/saved_tab_groups_unsupported_ui.h"
+ #include "chrome/browser/ui/webui/segmentation_internals/segmentation_internals_ui.h"
+ #include "chrome/browser/ui/webui/signin_internals_ui.h"
+@@ -289,6 +290,7 @@
+   map.AddWebUIConfig(std::make_unique<FamilyLinkUserInternalsUIConfig>());
+   map.AddWebUIConfig(std::make_unique<FlagsUIConfig>());
+   map.AddWebUIConfig(std::make_unique<glic::GlicExperimentalOptInUIConfig>());
++  map.AddWebUIConfig(std::make_unique<ReviewUIConfig>());
+   map.AddWebUIConfig(std::make_unique<glic::GlicUIConfig>());
+   map.AddWebUIConfig(std::make_unique<GCMInternalsUIConfig>());
+   map.AddWebUIConfig(

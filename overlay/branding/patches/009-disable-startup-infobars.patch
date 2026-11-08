@@ -1,0 +1,50 @@
+diff --git a/chrome/browser/ui/startup/infobar_utils.cc b/chrome/browser/ui/startup/infobar_utils.cc
+--- a/chrome/browser/ui/startup/infobar_utils.cc
++++ b/chrome/browser/ui/startup/infobar_utils.cc
+@@ -253,19 +253,21 @@ void AddInfoBarsIfNecessary(
+   infobars::ContentInfoBarManager* infobar_manager =
+       infobars::ContentInfoBarManager::FromWebContents(web_contents);
+
++#if 0  // Simprint: Disable Google API keys missing infobar
+   if (!google_apis::HasAPIKeyConfigured()) {
+     if (infobars::IsInfoBarMigrated(
+             infobars::InfoBarDelegate::GOOGLE_API_KEYS_INFOBAR_DELEGATE)) {
+       if (auto* manager =
+               infobars::BrowserInfoBarManager::From(g_browser_process)) {
+         manager->Show(
+             tabs::TabInterface::GetFromContents(web_contents),
+             infobars::InfoBarDelegate::GOOGLE_API_KEYS_INFOBAR_DELEGATE);
+       }
+     } else {
+       GoogleApiKeysInfoBarDelegate::Create(infobar_manager);
+     }
+   }
++#endif
+
+   if (ObsoleteSystem::IsObsoleteNowOrSoon()) {
+     PrefService* local_state = g_browser_process->local_state();
+@@ -311,14 +313,17 @@ void AddInfoBarsIfNecessary(
+   }
+
+ #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
++#if 0  // Simprint: Disable Session Restore infobar
+   if (base::FeatureList::IsEnabled(features::kSessionRestoreInfobar)) {
+     auto* session_restore_infobar_controller =
+         session_restore_infobar::SessionRestoreInfobarController::From(browser);
+     session_restore_infobar_controller->MaybeShowInfoBar(*profile,
+                                                          is_post_crash_launch);
+   }
++#endif
+ #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+
++#if 0  // Simprint: Disable default browser prompt infobar
+   // The default browser prompt should only be shown after the first run.
+   if (is_first_run == chrome::startup::IsFirstRun::kNo) {
+ #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+@@ -361,5 +366,6 @@ void AddInfoBarsIfNecessary(
+     ShowDefaultBrowserPrompt(profile, base::DoNothing());
+ #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+   }
++#endif
+ #endif  // !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
+ }

@@ -1,0 +1,58 @@
+diff --git a/build/win/reorder-imports.py b/build/win/reorder-imports.py
+--- a/build/win/reorder-imports.py
++++ b/build/win/reorder-imports.py
+@@ -27,8 +27,8 @@
+     # correct executable in the first place, so that this script
+     # only needs to verify that and not write a whole new exe.
+ 
+-    input_image = os.path.join(input_dir, 'chrome.exe')
+-    output_image = os.path.join(output_dir, 'chrome.exe')
++    input_image = os.path.join(input_dir, exe_name + '.exe')
++    output_image = os.path.join(output_dir, exe_name + '.exe')
+ 
+     # pefile mmap()s the whole executable, and then parses parts of
+     # it into python data structures for ease of processing.
+@@ -90,7 +90,7 @@
+ 
+     pe.write(filename=output_image)
+ 
+-    for fname in glob.iglob(os.path.join(input_dir, 'chrome.exe.*')):
++    for fname in glob.iglob(os.path.join(input_dir, exe_name + '.exe.*')):
+         shutil.copy(fname, os.path.join(output_dir, os.path.basename(fname)))
+     return 0
+ 
+@@ -98,6 +98,13 @@
+ def main(argv):
+     usage = 'reorder_imports.py -i <input_dir> -o <output_dir> -a <target_arch>'
+     parser = optparse.OptionParser(usage=usage)
++    parser.add_option(
++        '-e',
++        '--exe',
++        help='executable base name (default: chrome)',
++        metavar='NAME',
++        default='chrome',
++    )
+     parser.add_option(
+         '-i', '--input', help='reorder chrome.exe in DIR', metavar='DIR'
+     )
+@@ -111,7 +118,7 @@
+ 
+     if not opts.input or not opts.output:
+         parser.error('Please provide and input and output directory')
+-    return reorder_imports(opts.input, opts.output, opts.arch)
++    return reorder_imports(opts.input, opts.output, opts.arch, opts.exe)
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/chrome/BUILD.gn b/chrome/BUILD.gn
+--- a/chrome/BUILD.gn
++++ b/chrome/BUILD.gn
+@@ -99,6 +99,8 @@
+       rebase_path("$root_out_dir/initialexe", root_build_dir),
+       "-o",
+       rebase_path("$root_out_dir", root_build_dir),
++      "-e",
++      chrome_executable_name,
+       "-a",
+       current_cpu,
+     ]

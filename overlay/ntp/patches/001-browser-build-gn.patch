@@ -1,0 +1,11 @@
+diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -3640,6 +3640,7 @@
+     public_deps += [
+       "//chrome/browser/ui/webui/customize_buttons:mojo_bindings",
+       "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
++      "//chrome/browser/ui/webui/new_tab_page/simprint_ip:mojo_bindings",
+       "//chrome/browser/ui/webui/side_panel/customize_chrome:mojo_bindings",
+     ]
+   }

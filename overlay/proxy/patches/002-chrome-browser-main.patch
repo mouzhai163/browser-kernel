@@ -1,0 +1,75 @@
+diff --git a/chrome/browser/chrome_browser_main.cc b/chrome/browser/chrome_browser_main.cc
+--- a/chrome/browser/chrome_browser_main.cc
++++ b/chrome/browser/chrome_browser_main.cc
+@@ -69,6 +69,7 @@
+ #include "chrome/browser/segmentation_platform/chrome_browser_main_extra_parts_segmentation_platform.h"
+ #include "chrome/browser/sessions/chrome_serialized_navigation_driver.h"
+ #include "chrome/browser/shell_integration.h"
++#include "simprint/simprint_browser_context.h"
+ #include "chrome/browser/startup_data.h"
+ #include "chrome/browser/translate/chrome_translate_client.h"
+ #include "chrome/browser/translate/translate_service.h"
+@@ -467,6 +468,7 @@
+     profiles::SetLastUsedProfile(profile_basename);
+     last_used_profile_set = true;
+   }
++
+ #endif
+ 
+   bool profile_dir_specified =
+@@ -1534,6 +1536,22 @@
+ void ChromeBrowserMainParts::PreProfileInit() {
+   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreProfileInit");
+ 
++#if BUILDFLAG(IS_WIN)
++  // Initialize Simprint browser context early, before profiles are created
++  // This ensures proxy configuration is available when ProfileNetworkContextService is created
++  simprint::SimprintBrowserContext::GetInstance()->Initialize();
++
++  const base::CommandLine* command_line =
++      base::CommandLine::ForCurrentProcess();
++  if (command_line->HasSwitch("simprint-env-id")) {
++    std::string env_id = command_line->GetSwitchValueASCII("simprint-env-id");
++    simprint::eventbus::EventBus::GetInstance().Initialize(env_id);
++    simprint::SimprintBrowserContext::GetInstance()->RegisterEventBusHandlers();
++    simprint::SimprintBrowserContext::GetInstance()
++        ->WaitForInitialLaunchConfig(base::Seconds(5));
++  }
++#endif
++
+   media::AudioManager::SetGlobalAppName(
+       l10n_util::GetStringUTF8(IDS_SHORT_PRODUCT_NAME));
+ 
+@@ -1736,20 +1754,12 @@
+   browser_process_->browser_policy_connector()->OnBrowserStarted();
+ 
+ #if BUILDFLAG(IS_WIN)
+-  // Simprint 认证检查：确保只有通过 Tauri 启动且已登录的用户才能使用浏览器
+   {
+     const base::CommandLine* command_line =
+         base::CommandLine::ForCurrentProcess();
+     if (command_line->HasSwitch("simprint-env-id")) {
+-      // 通过 Tauri 启动：初始化 EventBus 并通过 IPC 查询认证状态
+-      std::string env_id =
+-          command_line->GetSwitchValueASCII("simprint-env-id");
+-      simprint::eventbus::EventBus::GetInstance().Initialize(env_id);
+-
+-      // 启动认证检查：超时 5 秒，未登录或 IPC 异常 → 静默退出
+       simprint::auth::StartupAuthChecker::Check(5000);
+     } else {
+-      // 直接启动（未通过 Tauri）：立即退出
+       simprint::auth::StartupAuthChecker::ExitBrowserSilently();
+     }
+   }
+@@ -2286,6 +2296,11 @@
+ 
+   for (auto& chrome_extra_part : chrome_extra_parts_) {
+     chrome_extra_part->PostMainMessageLoopRun();
+   }
++
++#if BUILDFLAG(IS_WIN)
++  // Shutdown Simprint browser context
++  simprint::SimprintBrowserContext::GetInstance()->Shutdown();
++#endif
+ 
+   TranslateService::Shutdown();

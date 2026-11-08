@@ -1,0 +1,12 @@
+diff --git a/chrome/browser/ui/webui/new_tab_page/BUILD.gn b/chrome/browser/ui/webui/new_tab_page/BUILD.gn
+--- a/chrome/browser/ui/webui/new_tab_page/BUILD.gn
++++ b/chrome/browser/ui/webui/new_tab_page/BUILD.gn
+@@ -67,6 +67,8 @@
+   sources = [
+     "new_tab_page_handler.cc",
+     "new_tab_page_ui.cc",
++    "simprint_ip/simprint_ip_handler.cc",
++    "simprint_ip/simprint_ip_handler.h",
+     "untrusted_source.cc",
+   ]
+   public = [ "new_tab_page_handler.h" ]

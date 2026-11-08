@@ -1,0 +1,160 @@
+diff --git a/third_party/blink/renderer/modules/speech/speech_synthesis.cc b/third_party/blink/renderer/modules/speech/speech_synthesis.cc
+--- a/third_party/blink/renderer/modules/speech/speech_synthesis.cc
++++ b/third_party/blink/renderer/modules/speech/speech_synthesis.cc
+@@ -23,6 +23,8 @@
+  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
++#include "base/containers/span.h"
++#include "base/memory/raw_ptr_exclusion.h"
+ #include "third_party/blink/renderer/modules/speech/speech_synthesis.h"
+ 
+ #include <tuple>
+@@ -38,6 +40,8 @@
+ #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+ #include "third_party/blink/renderer/core/frame/web_feature.h"
+ #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
++#include "simprint/fingerprint/browser_fingerprint.h"
++#include "simprint/fingerprint/network_location_fingerprint.h"
+ #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+ #include "third_party/blink/renderer/core/timing/performance.h"
+ #include "third_party/blink/renderer/modules/speech/speech_synthesis_error_event.h"
+@@ -82,9 +86,130 @@
+       receiver_(this, &window),
+       mojom_synthesis_(&window) {}
+ 
++namespace {
++
++// Simprint: the real list is the installed Windows TTS voices, which reveals the
++// machine's real UI/language packs (e.g. de-DE + zh-CN while the profile says
++// en-US). In every mode except "system" expose a stock Windows voice set that
++// matches the configured language instead.
++struct SimprintVoice {
++  const char* name;
++  const char* lang;
++};
++
++constexpr SimprintVoice kEnUsVoices[] = {
++    {"Microsoft David - English (United States)", "en-US"},
++    {"Microsoft Mark - English (United States)", "en-US"},
++    {"Microsoft Zira - English (United States)", "en-US"},
++};
++
++struct SimprintVoiceSet {
++  const char* language_prefix;  // matched against the configured language
++  RAW_PTR_EXCLUSION base::span<const SimprintVoice> voices;  // static data
++};
++
++constexpr SimprintVoice kEnGbVoices[] = {
++    {"Microsoft George - English (United Kingdom)", "en-GB"},
++    {"Microsoft Hazel - English (United Kingdom)", "en-GB"},
++    {"Microsoft Susan - English (United Kingdom)", "en-GB"},
++};
++constexpr SimprintVoice kZhCnVoices[] = {
++    {"Microsoft Huihui - Chinese (Simplified, PRC)", "zh-CN"},
++    {"Microsoft Kangkang - Chinese (Simplified, PRC)", "zh-CN"},
++    {"Microsoft Yaoyao - Chinese (Simplified, PRC)", "zh-CN"},
++};
++constexpr SimprintVoice kDeDeVoices[] = {
++    {"Microsoft Hedda - German (Germany)", "de-DE"},
++    {"Microsoft Katja - German (Germany)", "de-DE"},
++    {"Microsoft Stefan - German (Germany)", "de-DE"},
++};
++constexpr SimprintVoice kFrFrVoices[] = {
++    {"Microsoft Hortense - French (France)", "fr-FR"},
++    {"Microsoft Julie - French (France)", "fr-FR"},
++    {"Microsoft Paul - French (France)", "fr-FR"},
++};
++constexpr SimprintVoice kEsEsVoices[] = {
++    {"Microsoft Helena - Spanish (Spain)", "es-ES"},
++    {"Microsoft Laura - Spanish (Spain)", "es-ES"},
++    {"Microsoft Pablo - Spanish (Spain)", "es-ES"},
++};
++constexpr SimprintVoice kJaJpVoices[] = {
++    {"Microsoft Ayumi - Japanese (Japan)", "ja-JP"},
++    {"Microsoft Haruka - Japanese (Japan)", "ja-JP"},
++    {"Microsoft Ichiro - Japanese (Japan)", "ja-JP"},
++};
++constexpr SimprintVoice kKoKrVoices[] = {
++    {"Microsoft Heami - Korean (Korea)", "ko-KR"},
++};
++constexpr SimprintVoice kRuRuVoices[] = {
++    {"Microsoft Irina - Russian (Russia)", "ru-RU"},
++    {"Microsoft Pavel - Russian (Russia)", "ru-RU"},
++};
++constexpr SimprintVoice kPtBrVoices[] = {
++    {"Microsoft Maria - Portuguese (Brazil)", "pt-BR"},
++};
++constexpr SimprintVoice kItItVoices[] = {
++    {"Microsoft Elsa - Italian (Italy)", "it-IT"},
++    {"Microsoft Cosimo - Italian (Italy)", "it-IT"},
++};
++
++constexpr SimprintVoiceSet kVoiceSets[] = {
++    {"en-GB", kEnGbVoices},
++    {"zh", kZhCnVoices},
++    {"de", kDeDeVoices},
++    {"fr", kFrFrVoices},
++    {"es", kEsEsVoices},
++    {"ja", kJaJpVoices},
++    {"ko", kKoKrVoices},
++    {"ru", kRuRuVoices},
++    {"pt", kPtBrVoices},
++    {"it", kItItVoices},
++};
++
++Vector<mojom::blink::SpeechSynthesisVoicePtr> MakeSimprintVoices(
++    const std::string& language) {
++  Vector<mojom::blink::SpeechSynthesisVoicePtr> voices;
++  auto add = [&voices](const SimprintVoice& v, bool is_default) {
++    auto voice = mojom::blink::SpeechSynthesisVoice::New();
++    voice->voice_uri = String::FromUtf8(v.name);
++    voice->name = String::FromUtf8(v.name);
++    voice->lang = String::FromUtf8(v.lang);
++    voice->is_local_service = true;
++    voice->is_default = is_default;
++    voices.push_back(std::move(voice));
++  };
++  bool first = true;
++  for (const SimprintVoiceSet& set : kVoiceSets) {
++    if (language.rfind(set.language_prefix, 0) == 0) {
++      for (const SimprintVoice& v : set.voices) {
++        add(v, first);
++        first = false;
++      }
++      break;
++    }
++  }
++  // Windows always ships the en-US voices as well.
++  for (const SimprintVoice& v : kEnUsVoices) {
++    add(v, first);
++    first = false;
++  }
++  return voices;
++}
++
++}  // namespace
++
+ void SpeechSynthesis::OnSetVoiceList(
+     Vector<mojom::blink::SpeechSynthesisVoicePtr> mojom_voices) {
+   voice_list_.clear();
++  // Simprint: 非 "system" 模式一律使用与配置语言匹配的标准 Windows 语音列表。
++  {
++    const std::string speech_mode =
++        simprint::fingerprint::BrowserFingerprint::GetConfiguredSpeechVoicesMode();
++    if (!speech_mode.empty() && speech_mode != "system") {
++      mojom_voices = MakeSimprintVoices(
++          simprint::fingerprint::NetworkLocationFingerprint::GetConfiguredLanguage());
++    }
++  }
+   for (auto& mojom_voice : mojom_voices) {
+     voice_list_.push_back(
+         MakeGarbageCollected<SpeechSynthesisVoice>(std::move(mojom_voice)));
+@@ -95,6 +220,7 @@
+ const HeapVector<Member<SpeechSynthesisVoice>>& SpeechSynthesis::getVoices() {
+   // Kick off initialization here to ensure voice list gets populated.
+   std::ignore = TryEnsureMojomSynthesis();
++
+   return voice_list_;
+ }
+ 

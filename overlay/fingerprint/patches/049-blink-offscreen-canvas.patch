@@ -1,0 +1,33 @@
+diff --git a/third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.cc b/third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.cc
+--- a/third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.cc
++++ b/third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.cc
+@@ -48,6 +48,9 @@
+ #include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
+ #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+ #include "third_party/blink/renderer/platform/fonts/plain_text_painter.h"
++#include "third_party/skia/include/core/SkBitmap.h"
++#include "third_party/skia/include/core/SkImage.h"
++#include "simprint/fingerprint/browser_fingerprint.h"
+ #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
+ #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
+ #include "third_party/blink/renderer/platform/graphics/exported_canvas_resource.h"
+@@ -586,6 +589,19 @@
+   base::TimeTicks start_time = base::TimeTicks::Now();
+   scoped_refptr<StaticBitmapImage> image_bitmap = context_->GetImage();
+   if (image_bitmap) {
++    // Simprint: 应用 Canvas 指纹噪声（与 HTMLCanvasElement 保持一致）
++    SkBitmap bitmap;
++    if (image_bitmap->PaintImageForCurrentFrame().GetSwSkImage()->asLegacyBitmap(&bitmap)) {
++      if (bitmap.getPixels()) {
++        simprint::fingerprint::BrowserFingerprint::ApplyCanvasNoise(
++            static_cast<unsigned char*>(bitmap.getPixels()),
++            bitmap.computeByteSize());
++        // 从修改后的 bitmap 创建新的 StaticBitmapImage
++        sk_sp<SkImage> sk_image = SkImages::RasterFromBitmap(bitmap);
++        image_bitmap = UnacceleratedStaticBitmapImage::Create(sk_image);
++      }
++    }
++
+     auto* resolver = MakeGarbageCollected<ScriptPromiseResolver<Blob>>(
+         script_state, exception_state.GetContext());
+     CanvasAsyncBlobCreator::ToBlobFunctionType function_type =

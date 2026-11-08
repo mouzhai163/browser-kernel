@@ -1,0 +1,20 @@
+diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
+--- a/chrome/browser/BUILD.gn
++++ b/chrome/browser/BUILD.gn
+@@ -2624,6 +2624,8 @@
+       "//chrome/browser/ui/content_settings:impl",
+       "//chrome/browser/ui/desktop_to_mobile_promos:impl",
+       "//chrome/browser/ui/global_media_controls",
++    "//simprint/config",
++    "//simprint/fingerprint",
+       "//chrome/browser/ui/global_media_controls:impl",
+       "//chrome/browser/ui/media_router",
+       "//chrome/browser/ui/media_router:impl",
+@@ -3524,6 +3526,7 @@
+       "//chrome/services/util_win/public/mojom",
+       "//simprint/auth",
+       "//simprint/eventbus",
++      "//simprint/fingerprint",
+       "//ui/views",
+       "//ui/views/controls/webview",
+     ]

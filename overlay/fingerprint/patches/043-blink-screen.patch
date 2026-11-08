@@ -1,0 +1,77 @@
+diff --git a/third_party/blink/renderer/core/frame/screen.cc b/third_party/blink/renderer/core/frame/screen.cc
+--- a/third_party/blink/renderer/core/frame/screen.cc
++++ b/third_party/blink/renderer/core/frame/screen.cc
+@@ -38,6 +38,7 @@
+ #include "third_party/blink/renderer/core/page/chrome_client.h"
+ #include "ui/display/screen_info.h"
+ #include "ui/display/screen_infos.h"
++#include "simprint/fingerprint/screen_hardware_fingerprint.h"
+ 
+ namespace blink {
+ 
+@@ -88,18 +89,36 @@
+ }
+ 
+ int Screen::height() const {
++  // Simprint: 应用屏幕高度指纹
++  int configured_height = simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredScreenHeight();
++  if (configured_height > 0) {
++    return configured_height;
++  }
++
+   if (!DomWindow())
+     return 0;
+   return GetRect(/*available=*/false).height();
+ }
+ 
+ int Screen::width() const {
++  // Simprint: 应用屏幕宽度指纹
++  int configured_width = simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredScreenWidth();
++  if (configured_width > 0) {
++    return configured_width;
++  }
++
+   if (!DomWindow())
+     return 0;
+   return GetRect(/*available=*/false).width();
+ }
+ 
+ unsigned Screen::colorDepth() const {
++  // Simprint: 应用色深指纹
++  int configured_color_depth = simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredColorDepth();
++  if (configured_color_depth > 0) {
++    return static_cast<unsigned>(configured_color_depth);
++  }
++
+   // "If the user agent does not know the color depth or does not want to
+   // return it for privacy considerations, it should return 24."
+   //
+@@ -131,12 +150,28 @@
+ }
+ 
+ int Screen::availHeight() const {
++  // Simprint: 可用高度 = 屏幕高度 - 任务栏。真实 Windows 的 availHeight 小于 height；
++  // 两者相等意味着没有任务栏，是明显的异常特征。
++  int configured_height = simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredScreenHeight();
++  if (configured_height > 0) {
++    constexpr int kWindowsTaskbarHeight = 40;
++    return configured_height > 2 * kWindowsTaskbarHeight
++               ? configured_height - kWindowsTaskbarHeight
++               : configured_height;
++  }
++
+   if (!DomWindow())
+     return 0;
+   return GetRect(/*available=*/true).height();
+ }
+ 
+ int Screen::availWidth() const {
++  // Simprint: 应用屏幕宽度指纹（availWidth 应该与 width 一致）
++  int configured_width = simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredScreenWidth();
++  if (configured_width > 0) {
++    return configured_width;
++  }
++
+   if (!DomWindow())
+     return 0;
+   return GetRect(/*available=*/true).width();

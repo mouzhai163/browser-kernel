@@ -1,0 +1,14 @@
+diff --git a/services/network/network_service.h b/services/network/network_service.h
+--- a/services/network/network_service.h
++++ b/services/network/network_service.h
+@@ -186,6 +186,10 @@
+       mojom::HttpAuthStaticParamsPtr http_auth_static_params) override;
+   void ConfigureHttpAuthPrefs(
+       mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_params) override;
++  void SetSocks5AuthEntries(
++      std::vector<mojom::Socks5AuthEntryPtr> socks5_auth_entries) override;
++  void CloseAllConnections() override;
++  void ClearHttpAuthCache() override;
+   void SetRawHeadersAccess(network::RendererProcessId process_id,
+                            const std::vector<url::Origin>& origins) override;
+   void SetMaxConnectionsPerProxyChain(

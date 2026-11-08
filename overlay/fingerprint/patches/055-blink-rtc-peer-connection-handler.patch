@@ -1,0 +1,37 @@
+diff --git a/third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.cc b/third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.cc
+--- a/third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.cc
++++ b/third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.cc
+@@ -48,6 +48,7 @@
+ #include "third_party/blink/renderer/modules/peerconnection/peer_connection_features.h"
+ #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
+ #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_tracer_impl.h"
++#include "simprint/fingerprint/network_location_fingerprint.h"
+ #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
+ #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender_impl.h"
+ #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver_impl.h"
+@@ -2004,6 +2005,25 @@
+     return;
+   }
+   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceCandidateImpl");
++
++  // Simprint: 检查是否需要过滤 ICE candidates
++  std::string webrtc_mode = simprint::fingerprint::NetworkLocationFingerprint::GetConfiguredWebRTCMode();
++  // 默认拒绝：只有明确配置为 "real" 才放行。空值、"disable"、未实现的 "replace"、
++  // 以及任何未知值都按"禁用"处理，避免配置缺失或写错时泄露真实 IP。
++  if (webrtc_mode != "real") {
++    if (webrtc_mode == "disable_non_proxied") {
++      // 只允许 relay 类型的候选项（通过 TURN 服务器）
++      std::string sdp_str = sdp.Utf8();
++      if (sdp_str.find("typ relay") == std::string::npos) {
++        // 不是 relay 类型，丢弃此候选项
++        return;
++      }
++    } else {
++      // 完全禁用 ICE candidates
++      return;
++    }
++  }
++
+   // This line can cause garbage collection.
+   auto* platform_candidate = MakeGarbageCollected<RTCIceCandidatePlatform>(
+       sdp, sdp_mid, sdp_mline_index, usernameFragment, url);

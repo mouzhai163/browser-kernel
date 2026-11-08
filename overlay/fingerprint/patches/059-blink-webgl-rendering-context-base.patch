@@ -1,0 +1,165 @@
+diff --git a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc b/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc
+--- a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc
++++ b/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc
+@@ -39,6 +39,7 @@
+ #include "base/metrics/histogram_macros.h"
+ #include "base/notimplemented.h"
+ #include "base/numerics/checked_math.h"
++#include "base/threading/platform_thread.h"
+ #include "base/strings/stringprintf.h"
+ #include "base/synchronization/lock.h"
+ #include "base/task/single_thread_task_runner.h"
+@@ -164,6 +165,7 @@
+ #include "third_party/blink/renderer/platform/wtf/functional.h"
+ #include "third_party/blink/renderer/platform/wtf/text/format.h"
+ #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
++#include "simprint/fingerprint/browser_fingerprint.h"
+ #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+ #include "third_party/skia/include/core/SkColorType.h"
+ #include "third_party/skia/include/core/SkImage.h"
+@@ -4119,8 +4121,9 @@
+       return GetIntParameter(script_state, pname);
+     case GL_RENDERBUFFER_BINDING:
+       return WebGLAny(script_state, renderbuffer_binding_.Get());
+-    case GL_RENDERER:
+-      return WebGLAny(script_state, String("WebKit WebGL"));
++    case GL_RENDERER: {
++      return WebGLAny(script_state, String("WebKit WebGL"));
++    }
+     case GL_SAMPLE_ALPHA_TO_COVERAGE:
+       return GetBooleanParameter(script_state, pname);
+     case GL_SAMPLE_BUFFERS:
+@@ -4137,12 +4145,24 @@
+       return GetWebGLIntArrayParameter(script_state, pname);
+     case GL_SCISSOR_TEST:
+       return GetBooleanParameter(script_state, pname);
+-    case GL_SHADING_LANGUAGE_VERSION:
++    case GL_SHADING_LANGUAGE_VERSION: {
++      // Simprint: custom/random 模式一律返回与真实 Chrome 相同的固定字符串。
++      // 随机或异常的值（每次调用都变、或不是 Chrome 会产生的组合）本身就是指纹特征。
++      std::string webgl_info_mode = simprint::fingerprint::BrowserFingerprint::GetConfiguredWebGLInfoMode();
++      if (webgl_info_mode == "custom" || webgl_info_mode == "random") {
++        return WebGLAny(
++            script_state,
++            String(IsWebGL2()
++                       ? "WebGL GLSL ES 3.00 (OpenGL ES GLSL ES 3.0 Chromium)"
++                       : "WebGL GLSL ES 1.0 (OpenGL ES GLSL ES 1.0 Chromium)"));
++      }
++      // real 或 system 模式：返回真实版本
+       return WebGLAny(
+           script_state,
+           StrCat({"WebGL GLSL ES 1.0 (",
+                   String(ContextGL()->GetString(GL_SHADING_LANGUAGE_VERSION)),
+                   ")"}));
++    }
+     case GL_STENCIL_BACK_FAIL:
+       return GetUnsignedIntParameter(script_state, pname);
+     case GL_STENCIL_BACK_FUNC:
+@@ -4197,13 +4224,25 @@
+       return WebGLAny(script_state, unpack_premultiply_alpha_);
+     case GC3D_UNPACK_COLORSPACE_CONVERSION_WEBGL:
+       return WebGLAny(script_state, unpack_colorspace_conversion_);
+-    case GL_VENDOR:
+-      return WebGLAny(script_state, String("WebKit"));
+-    case GL_VERSION:
++    case GL_VENDOR: {
++      // 遮蔽后的 VENDOR/RENDERER 在 Chrome 里恒为 "WebKit" / "WebKit WebGL"；
++      // 真实显卡信息只通过 WEBGL_debug_renderer_info（UNMASKED_*）暴露，配置值只作用在那里。
++      return WebGLAny(script_state, String("WebKit"));
++    }
++    case GL_VERSION: {
++      // Simprint: 同上，固定为真实 Chrome 的值。
++      std::string webgl_info_mode = simprint::fingerprint::BrowserFingerprint::GetConfiguredWebGLInfoMode();
++      if (webgl_info_mode == "custom" || webgl_info_mode == "random") {
++        return WebGLAny(script_state,
++                        String(IsWebGL2() ? "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
++                                          : "WebGL 1.0 (OpenGL ES 2.0 Chromium)"));
++      }
++      // real 或 system 模式：返回真实版本
+       return WebGLAny(
+           script_state,
+           StrCat({"WebGL 1.0 (", String(ContextGL()->GetString(GL_VERSION)),
+                   ")"}));
++    }
+     case GL_VIEWPORT:
+       return GetWebGLIntArrayParameter(script_state, pname);
+     case GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES:  // OES_standard_derivatives
+@@ -4214,24 +4267,47 @@
+           GL_INVALID_ENUM, "getParameter",
+           "invalid parameter name, OES_standard_derivatives not enabled");
+       return ScriptValue::CreateNull(script_state->GetIsolate());
+-    case WebGLDebugRendererInfo::kUnmaskedRendererWebgl:
+-      if (ExtensionEnabled(kWebGLDebugRendererInfoName)) {
+-        return WebGLAny(script_state,
+-                        String(ContextGL()->GetString(GL_RENDERER)));
++    case WebGLDebugRendererInfo::kUnmaskedRendererWebgl: {
++      // Simprint: 无条件返回配置的 WebGL Renderer，不检查扩展是否启用
++      // 原因：browserscan 会在扩展加载前访问此参数，如果返回 null 并抛出 GL_INVALID_ENUM 会被标红
++      // AdsPower 等商业指纹浏览器也是无条件返回，不检查扩展
++
++      // 【性能模拟】browserscan 检测：在 5ms 内疯狂调用此参数，如果速度 > 100次/ms 就标红
++      // 添加微小延迟，模拟真实 GPU 信息访问的性能开销
++      // 目标：让调用速度降低到 < 100 次/ms（即每次调用 > 0.01ms）
++      static int call_count = 0;
++      if (++call_count % 10 == 0) {
++        // 每 10 次调用添加一次微延迟（约 0.1-0.2ms）
++        base::PlatformThread::Sleep(base::Microseconds(100));
+       }
+-      SynthesizeGLError(
+-          GL_INVALID_ENUM, "getParameter",
+-          "invalid parameter name, WEBGL_debug_renderer_info not enabled");
+-      return ScriptValue::CreateNull(script_state->GetIsolate());
+-    case WebGLDebugRendererInfo::kUnmaskedVendorWebgl:
+-      if (ExtensionEnabled(kWebGLDebugRendererInfoName)) {
+-        return WebGLAny(script_state,
+-                        String(ContextGL()->GetString(GL_VENDOR)));
++
++      std::string configured_renderer = simprint::fingerprint::BrowserFingerprint::GetConfiguredWebGLRenderer();
++      if (!configured_renderer.empty()) {
++        return WebGLAny(script_state, String(configured_renderer.c_str()));
+       }
+-      SynthesizeGLError(
+-          GL_INVALID_ENUM, "getParameter",
+-          "invalid parameter name, WEBGL_debug_renderer_info not enabled");
+-      return ScriptValue::CreateNull(script_state->GetIsolate());
++      return WebGLAny(script_state,
++                      String(ContextGL()->GetString(GL_RENDERER)));
++    }
++    case WebGLDebugRendererInfo::kUnmaskedVendorWebgl: {
++      // Simprint: 无条件返回配置的 WebGL Vendor，不检查扩展是否启用
++      // 原因：browserscan 会在扩展加载前访问此参数，如果返回 null 并抛出 GL_INVALID_ENUM 会被标红
++      // AdsPower 等商业指纹浏览器也是无条件返回，不检查扩展
++
++      // 【性能模拟】browserscan 检测：在 5ms 内疯狂调用此参数，如果速度 > 100次/ms 就标红
++      // 添加微小延迟，模拟真实 GPU 信息访问的性能开销
++      static int vendor_call_count = 0;
++      if (++vendor_call_count % 10 == 0) {
++        // 每 10 次调用添加一次微延迟（约 0.1-0.2ms）
++        base::PlatformThread::Sleep(base::Microseconds(100));
++      }
++
++      std::string configured_vendor = simprint::fingerprint::BrowserFingerprint::GetConfiguredWebGLVendor();
++      if (!configured_vendor.empty()) {
++        return WebGLAny(script_state, String(configured_vendor.c_str()));
++      }
++      return WebGLAny(script_state,
++                      String(ContextGL()->GetString(GL_VENDOR)));
++    }
+     case GL_VERTEX_ARRAY_BINDING_OES:  // OES_vertex_array_object
+       if (ExtensionEnabled(kOESVertexArrayObjectName) || IsWebGL2()) {
+         if (!bound_vertex_array_object_->IsDefaultObject())
+@@ -5371,6 +5447,14 @@
+       return;
+     }
+     ContextGL()->ReadPixels(x, y, width, height, format, type, data);
++
++    // Apply WebGL image fingerprint noise. Only for RGBA/UNSIGNED_BYTE and never
++    // beyond the buffer size that ValidateReadPixelsFuncParameters() checked.
++    if (data && width > 0 && height > 0 && format == GL_RGBA &&
++        type == GL_UNSIGNED_BYTE) {
++      simprint::fingerprint::BrowserFingerprint::ApplyWebGLImageNoise(
++          data, static_cast<size_t>(buffer_size.ValueOrDie()));
++    }
+   }
+ }
+ 

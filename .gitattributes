@@ -1,0 +1,3 @@
+# patches and sources must keep their exact bytes
+*.patch -text
+* text=auto eol=lf

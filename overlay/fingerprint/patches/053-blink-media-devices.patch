@@ -1,0 +1,85 @@
+diff --git a/third_party/blink/renderer/modules/mediastream/media_devices.cc b/third_party/blink/renderer/modules/mediastream/media_devices.cc
+--- a/third_party/blink/renderer/modules/mediastream/media_devices.cc
++++ b/third_party/blink/renderer/modules/mediastream/media_devices.cc
+@@ -3,6 +3,8 @@
+ // found in the LICENSE file.
+ 
+ #include "third_party/blink/renderer/modules/mediastream/media_devices.h"
++
++#include "simprint/fingerprint/browser_fingerprint.h"
+ 
+ #include <algorithm>
+ #include <utility>
+@@ -1496,7 +1498,71 @@
+   }
+ 
+   ReportCompletedEnumerateDevices(result_contains_nonempty_input_device_ids);
+-  result_tracker->Resolve(media_devices);
++
++  // 应用 MediaDevices 指纹保护
++  std::string mode = simprint::fingerprint::BrowserFingerprint::GetConfiguredMediaDevicesMode();
++  if (!mode.empty() && mode != "real") {
++    // 每种类型只保留一个，并按 Chrome 的顺序（audioinput、videoinput、audiooutput）返回。
++    // 宿主机没有的类型（例如台式机没有麦克风）补一个标准占位设备，否则设备清单会暴露
++    // 宿主机的真实硬件布局。
++    MediaDeviceInfo* audio_input = nullptr;
++    MediaDeviceInfo* video_input = nullptr;
++    MediaDeviceInfo* audio_output = nullptr;
++    for (const auto& device : media_devices) {
++      switch (device->DeviceType()) {
++        case mojom::blink::MediaDeviceType::kMediaAudioInput:
++          if (!audio_input) audio_input = device.Get();
++          break;
++        case mojom::blink::MediaDeviceType::kMediaVideoInput:
++          if (!video_input) video_input = device.Get();
++          break;
++        case mojom::blink::MediaDeviceType::kMediaAudioOutput:
++          if (!audio_output) audio_output = device.Get();
++          break;
++        default:
++          break;
++      }
++    }
++    // 已授权时设备带 ID/标签；未授权时全部为空，占位设备要和已有设备保持同一状态。
++    bool permitted = false;
++    for (const auto& device : media_devices) {
++      if (!device->deviceId().empty()) {
++        permitted = true;
++        break;
++      }
++    }
++    auto make_placeholder = [permitted](const char* id, const char* label,
++                                        mojom::blink::MediaDeviceType type) {
++      return MakeGarbageCollected<MediaDeviceInfo>(
++          permitted ? String(id) : g_empty_string,
++          permitted ? String(label) : g_empty_string,
++          permitted ? String("simprint-default-group") : g_empty_string, type);
++    };
++    if (!audio_input) {
++      audio_input = make_placeholder(
++          "default", "Default - Microphone (Realtek High Definition Audio)",
++          mojom::blink::MediaDeviceType::kMediaAudioInput);
++    }
++    if (!video_input) {
++      video_input = make_placeholder(
++          "simprint-camera", "Integrated Camera",
++          mojom::blink::MediaDeviceType::kMediaVideoInput);
++    }
++    if (!audio_output) {
++      audio_output = make_placeholder(
++          "default", "Default - Speakers (Realtek High Definition Audio)",
++          mojom::blink::MediaDeviceType::kMediaAudioOutput);
++    }
++    MediaDeviceInfoVector filtered_devices;
++    filtered_devices.push_back(audio_input);
++    filtered_devices.push_back(video_input);
++    filtered_devices.push_back(audio_output);
++
++    result_tracker->Resolve(filtered_devices);
++  } else {
++    result_tracker->Resolve(media_devices);
++  }
++
+   tracer->End();
+ }
+ 
