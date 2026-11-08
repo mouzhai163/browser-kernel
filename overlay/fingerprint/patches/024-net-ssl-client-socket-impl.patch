@@ -6,7 +6,7 @@ index 9cb2c324e9df1..b897ffca596c3 100644
  
  #include "net/socket/ssl_client_socket_impl.h"
  
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/config/fingerprint_config_storage.h"
 +
  #include <errno.h>
  #include <string.h>
@@ -16,8 +16,8 @@ index 9cb2c324e9df1..b897ffca596c3 100644
    }
  
 -  SSL_set_permute_extensions(ssl_.get(), 1);
-+  // Simprint: SSL 指纹配置 - 控制扩展排列
-+  bool enable_permute = simprint::config::GetSSLFingerprint();
++  // MZ: SSL 指纹配置 - 控制扩展排列
++  bool enable_permute = mz::config::GetSSLFingerprint();
 +  SSL_set_permute_extensions(ssl_.get(), enable_permute ? 1 : 0);
  
    // Configure BoringSSL to send Trust Anchor IDs, if provided.

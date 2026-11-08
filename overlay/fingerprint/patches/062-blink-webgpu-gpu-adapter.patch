@@ -15,21 +15,21 @@ index 67cc57071404f..8826a15816097 100644
  #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
  #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
  
-+// Simprint: 引入指纹配置接口
-+#include "simprint/fingerprint/browser_fingerprint.h"
++// MZ: 引入指纹配置接口
++#include "mz/fingerprint/browser_fingerprint.h"
 +
  namespace blink {
  
  namespace {
  
-+// Simprint: 从 WebGL renderer 字符串解析 GPU 信息
++// MZ: 从 WebGL renderer 字符串解析 GPU 信息
 +struct ParsedGPUInfo {
 +  std::string vendor;        // 例如 "nvidia", "intel", "amd"
 +  std::string description;   // 例如 "NVIDIA GeForce RTX 4080"
 +  std::string architecture;  // 例如 "ada", "ampere", "xe-lpg"
 +};
 +
-+// Simprint: 根据 GPU 型号推断架构
++// MZ: 根据 GPU 型号推断架构
 +std::string InferArchitecture(const std::string& description) {
 +  // NVIDIA 架构推断
 +  if (description.find("RTX 40") != std::string::npos ||
@@ -98,7 +98,7 @@ index 67cc57071404f..8826a15816097 100644
 +  return "";
 +}
 +
-+// Simprint: 解析 WebGL renderer 字符串
++// MZ: 解析 WebGL renderer 字符串
 +// 输入示例: "ANGLE (NVIDIA, NVIDIA GeForce RTX 4080 Direct3D11 vs_5_0 ps_5_0, D3D11)"
 +// 或: "Google Inc. (NVIDIA)"
 +ParsedGPUInfo ParseWebGLRenderer(const std::string& vendor_str, const std::string& renderer_str) {
@@ -165,9 +165,9 @@ index 67cc57071404f..8826a15816097 100644
    subgroup_max_size_ = info.subgroupMaxSize;
    power_preference_ = powerProperties.powerPreference;
  
-+  // Simprint: 如果配置了 WebGL 指纹，用相同的 GPU 信息替换 WebGPU
-+  std::string configured_vendor = simprint::fingerprint::BrowserFingerprint::GetConfiguredWebGLVendor();
-+  std::string configured_renderer = simprint::fingerprint::BrowserFingerprint::GetConfiguredWebGLRenderer();
++  // MZ: 如果配置了 WebGL 指纹，用相同的 GPU 信息替换 WebGPU
++  std::string configured_vendor = mz::fingerprint::BrowserFingerprint::GetConfiguredWebGLVendor();
++  std::string configured_renderer = mz::fingerprint::BrowserFingerprint::GetConfiguredWebGLRenderer();
 +
 +  if (!configured_vendor.empty() && !configured_renderer.empty()) {
 +    ParsedGPUInfo parsed = ParseWebGLRenderer(configured_vendor, configured_renderer);

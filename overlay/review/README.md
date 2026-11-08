@@ -4,7 +4,7 @@
 
 ## 功能概述
 
-本模块为 Simprint 浏览器添加内部审查页面和窗口增强功能，用于浏览器功能测试、调试和实例区分。
+本模块为 MZ 浏览器添加内部审查页面和窗口增强功能，用于浏览器功能测试、调试和实例区分。
 
 ### 1. chrome://review WebUI 页面
 - 内部审查页面用于功能测试和调试
@@ -15,8 +15,8 @@
 ### 2. 窗口图标徽章显示
 - 在窗口图标底部添加带数字的徽章区分不同浏览器实例
 - 使用 Skia 图形库绘制圆角矩形徽章
-- 徽章显示 `--simprint-display-id` 参数传入的数字
-- 图标文件命名规则：`{user-data-dir}/{simprint-env-id}.ico`
+- 徽章显示 `--mz-display-id` 参数传入的数字
+- 图标文件命名规则：`{user-data-dir}/{mz-env-id}.ico`
 - 支持多尺寸图标生成（16/32/48/64px）
 
 **徽章设计**：
@@ -49,10 +49,10 @@ overlay/review/
 │   ├── 001-005: Chrome Browser（interface binders, resources, ui, window）
 │   ├── 006-007: Chrome WebUI（build, configs）
 │   ├── 008-011: Chrome Common（switches, webui url constants）
-│   ├── 012-015: Simprint（eventbus, fingerprint config）
+│   ├── 012-015: MZ（eventbus, fingerprint config）
 │   └── 016: Tools（resource_ids.spec）
 ├── sources/
-│   ├── chrome_browser_simprint/          # 窗口图标管理器（3 文件）
+│   ├── chrome_browser_mz/          # 窗口图标管理器（3 文件）
 │   ├── chrome_browser_resources_review/  # review 前端资源（4 文件）
 │   └── chrome_browser_ui_webui_review/   # review 后端代码（6 文件）
 ├── scripts/
@@ -74,8 +74,8 @@ overlay/review/
 
 **集成点**：
 - `BrowserDesktopWindowTreeHostWin::OnFrameInitialized()` 中调用
-- 通过 `--simprint-display-id` 命令行参数传入徽章数字
-- 通过 `--simprint-env-id` 参数确定图标文件名
+- 通过 `--mz-display-id` 命令行参数传入徽章数字
+- 通过 `--mz-env-id` 参数确定图标文件名
 
 ### chrome://review WebUI
 
@@ -97,7 +97,7 @@ overlay/review/
 
 ### 自动打开 review 页面
 
-在 `simprint/eventbus/eventbus.cc` 的 `HandleHandshakeResponse()` 中：
+在 `mz/eventbus/eventbus.cc` 的 `HandleHandshakeResponse()` 中：
 - 配置加载成功后检查是否已存在 chrome://review 标签页
 - 如果不存在则在第一个浏览器窗口中打开新标签页
 - 避免重复打开
@@ -116,8 +116,8 @@ std::optional<std::string> env_name;
 
 ## 依赖关系
 
-- 依赖 `simprint/fingerprint` 模块（扩展配置结构）
-- 依赖 `simprint/eventbus` 模块（自动打开逻辑）
+- 依赖 `mz/fingerprint` 模块（扩展配置结构）
+- 依赖 `mz/eventbus` 模块（自动打开逻辑）
 - 依赖 Skia 图形库（窗口图标绘制）
 
 ## 注意事项
@@ -130,12 +130,12 @@ std::optional<std::string> env_name;
 
 ## 命令行参数
 
-- `--simprint-display-id=<number>`: 指定窗口图标徽章显示的数字
-- `--simprint-env-id=<string>`: 指定环境 ID，用于图标文件命名
+- `--mz-display-id=<number>`: 指定窗口图标徽章显示的数字
+- `--mz-env-id=<string>`: 指定环境 ID，用于图标文件命名
 
 ## 测试验证
 
-1. **窗口图标徽章**: 启动浏览器时传入 `--simprint-display-id=1`，检查任务栏图标是否显示徽章
+1. **窗口图标徽章**: 启动浏览器时传入 `--mz-display-id=1`，检查任务栏图标是否显示徽章
 2. **chrome://review 页面**: 访问 `chrome://review`，检查页面是否正常加载
 3. **自动打开**: 配置加载成功后，检查是否自动打开 chrome://review 标签页
 4. **环境信息**: 检查 FingerprintConfig 是否正确解析 env_id 和 env_name

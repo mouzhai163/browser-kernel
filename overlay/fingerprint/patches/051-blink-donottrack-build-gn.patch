@@ -7,6 +7,6 @@ index 4bcbeba9a9cf1..067471335f073 100644
      "navigator_do_not_track.h",
    ]
 +  deps = [
-+    "//simprint/fingerprint",
++    "//mz/fingerprint",
 +  ]
  }

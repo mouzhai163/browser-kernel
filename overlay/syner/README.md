@@ -39,7 +39,7 @@ overlay/syner/
 │   ├── 011-native-widget-aura.patch
 │   └── 012-widget-cc.patch
 └── sources/                           # 新增源文件
-    ├── simprint/
+    ├── mz/
     │   ├── eventbus/                  # EventBus 通信模块
     │   │   ├── BUILD.gn
     │   │   ├── eventbus.{cc,h}

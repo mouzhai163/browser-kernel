@@ -5,7 +5,7 @@ diff --git a/chrome/browser/chrome_browser_interface_binders_webui_parts_desktop
  #if !defined(OFFICIAL_BUILD)
  #include "chrome/browser/ui/webui/new_tab_page/foo/foo.mojom.h"  // nogncheck crbug.com/40147906
  #endif  // defined(OFFICIAL_BUILD)
-+#include "chrome/browser/ui/webui/new_tab_page/simprint_ip/simprint_ip.mojom.h"
++#include "chrome/browser/ui/webui/new_tab_page/mz_ip/mz_ip.mojom.h"
  
  #if BUILDFLAG(ENABLE_DICE_SUPPORT)
  #include "chrome/browser/ui/webui/feature_showcase/feature_showcase_ui.h"
@@ -13,8 +13,8 @@ diff --git a/chrome/browser/chrome_browser_interface_binders_webui_parts_desktop
    RegisterWebUIControllerInterfaceBinder<foo::mojom::FooHandler, NewTabPageUI>(
        map);
  #endif  // !defined(OFFICIAL_BUILD)
-+  // Simprint IP detection handler
-+  RegisterWebUIControllerInterfaceBinder<simprint_ip::mojom::SimprintIpHandler,
++  // MZ IP detection handler
++  RegisterWebUIControllerInterfaceBinder<mz_ip::mojom::MzIpHandler,
 +                                         NewTabPageUI>(map);
 +
  

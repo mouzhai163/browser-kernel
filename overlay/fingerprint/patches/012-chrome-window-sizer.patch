@@ -6,7 +6,7 @@ index 80a7479fa3912..a1392272c3c10 100644
  #include "ui/base/ui_base_switches.h"
  #include "ui/display/display.h"
  #include "ui/display/screen.h"
-+#include "simprint/fingerprint/window_settings.h"
++#include "mz/fingerprint/window_settings.h"
  
  #if BUILDFLAG(IS_CHROMEOS)
  #include "chrome/browser/ui/window_sizer/window_sizer_chromeos.h"
@@ -14,11 +14,11 @@ index 80a7479fa3912..a1392272c3c10 100644
      const gfx::Rect& specified_bounds,
      gfx::Rect* bounds,
      ui::mojom::WindowShowState* show_state) {
-+  // Simprint: 检查是否有配置的窗口大小和位置
++  // MZ: 检查是否有配置的窗口大小和位置
 +  int configured_width = 0, configured_height = 0;
 +  int configured_x = 0, configured_y = 0;
-+  bool has_size = simprint::fingerprint::WindowSettings::GetConfiguredWindowSize(&configured_width, &configured_height);
-+  bool has_position = simprint::fingerprint::WindowSettings::GetConfiguredWindowPosition(&configured_x, &configured_y);
++  bool has_size = mz::fingerprint::WindowSettings::GetConfiguredWindowSize(&configured_width, &configured_height);
++  bool has_position = mz::fingerprint::WindowSettings::GetConfiguredWindowPosition(&configured_x, &configured_y);
 +
 +  if (has_size && configured_width > 0 && configured_height > 0) {
 +    // 获取当前显示器的工作区域
@@ -27,7 +27,7 @@ index 80a7479fa3912..a1392272c3c10 100644
 +    int x, y;
 +    if (has_position) {
 +      // 如果有配置位置，使用配置的位置
-+      std::string position_mode = simprint::fingerprint::WindowSettings::GetConfiguredWindowPositionMode();
++      std::string position_mode = mz::fingerprint::WindowSettings::GetConfiguredWindowPositionMode();
 +      if (position_mode == "custom") {
 +        // 使用自定义位置
 +        x = configured_x;

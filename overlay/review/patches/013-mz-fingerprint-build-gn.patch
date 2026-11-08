@@ -1,0 +1,13 @@
+diff --git a/mz/fingerprint/BUILD.gn b/mz/fingerprint/BUILD.gn
+index 5d9462aa4bd5f..9deb9c46d0f79 100644
+--- a/mz/fingerprint/BUILD.gn
++++ b/mz/fingerprint/BUILD.gn
+@@ -21,6 +21,8 @@ source_set("fingerprint") {
+     "window_settings.h",
+   ]
+ 
++  defines = [ "MZ_FINGERPRINT_ENABLED" ]
++
+   deps = [
+     "//base",
+     "//mz/config",

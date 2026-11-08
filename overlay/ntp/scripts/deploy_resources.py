@@ -9,15 +9,15 @@ def run(chromium_src: Path, kernel_root: Path, project_root: Path) -> None:
     chromium_src = Path(chromium_src)
     project_root = Path(project_root)
 
-    # 复制 simprint_ip C++ 源文件
-    src_ip_dir = project_root / "simprint_ip"
-    dst_ip_dir = chromium_src / "chrome" / "browser" / "ui" / "webui" / "new_tab_page" / "simprint_ip"
+    # 复制 mz_ip C++ 源文件
+    src_ip_dir = project_root / "mz_ip"
+    dst_ip_dir = chromium_src / "chrome" / "browser" / "ui" / "webui" / "new_tab_page" / "mz_ip"
     if src_ip_dir.is_dir():
         dst_ip_dir.mkdir(parents=True, exist_ok=True)
         for f in src_ip_dir.iterdir():
             if f.is_file():
                 shutil.copy2(f, dst_ip_dir / f.name)
-                print(f"  {f.name} -> chrome/browser/ui/webui/new_tab_page/simprint_ip/")
+                print(f"  {f.name} -> chrome/browser/ui/webui/new_tab_page/mz_ip/")
 
     # 复制前端资源
     resources_dir = project_root / "resources"

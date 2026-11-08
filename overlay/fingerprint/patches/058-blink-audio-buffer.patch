@@ -6,7 +6,7 @@ index 40a355dec4aad..ee8613b53ecfd 100644
  
  #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
  
-+#include "simprint/fingerprint/browser_fingerprint.h"
++#include "mz/fingerprint/browser_fingerprint.h"
 +
  #include <memory>
  
@@ -20,7 +20,7 @@ index 40a355dec4aad..ee8613b53ecfd 100644
 +
 +  // 应用 Audio 指纹噪声
 +  if (channel_data && channel_data->Data()) {
-+    simprint::fingerprint::BrowserFingerprint::ApplyAudioNoise(
++    mz::fingerprint::BrowserFingerprint::ApplyAudioNoise(
 +      channel_data->Data(),
 +      channel_data->length()
 +    );
@@ -36,7 +36,7 @@ index 40a355dec4aad..ee8613b53ecfd 100644
    dst.first(count).copy_from(src.subspan(buffer_offset, count));
 +
 +  // 应用 Audio 指纹噪声到目标数组
-+  simprint::fingerprint::BrowserFingerprint::ApplyAudioNoise(
++  mz::fingerprint::BrowserFingerprint::ApplyAudioNoise(
 +    dst.data(),
 +    dst.size()
 +  );

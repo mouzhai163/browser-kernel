@@ -18,8 +18,8 @@ diff --git a/chrome/browser/ui/views/frame/browser_view.cc b/chrome/browser/ui/v
 +#include "chrome/browser/ui/views/frame/sync_input_replay.h"
  #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 +#include "content/public/browser/browser_thread.h"
-+#include "simprint/eventbus/eventbus.h"
-+#include "simprint/eventbus/topics.h"
++#include "mz/eventbus/eventbus.h"
++#include "mz/eventbus/topics.h"
  #include "chrome/browser/ui/views/frame/top_container_view.h"
  #include "chrome/browser/ui/views/frame/top_controls_slide_controller.h"
  #include "chrome/browser/ui/views/frame/vertical_tab_strip_background_blur_backdrop.h"
@@ -270,13 +270,13 @@ diff --git a/chrome/browser/ui/views/frame/browser_view.cc b/chrome/browser/ui/v
 +      root_view_for_sync_capture_ = root_view;
 +    }
 +    // 始终注册同步重放回调，避免 EventBus 晚于 InitViews 初始化时回调为空
-+    simprint::eventbus::EventBus::GetInstance().SetSyncReplayCallback(
++    mz::eventbus::EventBus::GetInstance().SetSyncReplayCallback(
 +        [](std::vector<uint8_t> data) {
 +          content::GetUIThreadTaskRunner({})->PostTask(
 +              FROM_HERE,
 +              base::BindOnce(ReplaySyncInputEvent, std::move(data)));
 +        });
-+    simprint::eventbus::EventBus::GetInstance().SetSyncPasteReplayCallback(
++    mz::eventbus::EventBus::GetInstance().SetSyncPasteReplayCallback(
 +        [](std::u16string text) {
 +          content::GetUIThreadTaskRunner({})->PostTask(
 +              FROM_HERE,

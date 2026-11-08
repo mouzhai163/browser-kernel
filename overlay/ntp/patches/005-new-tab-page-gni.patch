@@ -5,7 +5,7 @@ diff --git a/chrome/browser/resources/new_tab_page/new_tab_page.gni b/chrome/bro
                   "metrics_utils.ts",
                   "new_tab_page_proxy.ts",
                   "new_tab_page.ts",
-+                 "simprint_ntp.ts",
++                 "mz_ntp.ts",
                   "ntp_composebox.html.ts",
                   "ntp_composebox_context_menu.html.ts",
                   "ntp_composebox.ts",

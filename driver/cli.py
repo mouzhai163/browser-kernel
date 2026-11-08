@@ -89,14 +89,14 @@ def _print_plan(repo_root, feature_values: list[str], as_json: bool) -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Simprint 定制流水线：按 driver/order.txt 顺序执行各 overlay 单元的 apply / deploy / build",
+        description="MZ 定制流水线：按 driver/order.txt 顺序执行各 overlay 单元的 apply / deploy / build",
         prog="python -m driver",
     )
     parser.add_argument(
         "--out-dir",
         metavar="DIR",
         default=None,
-        help="Chromium 输出目录（相对 Chromium 根），如 out/Default、out/Release；用于 deploy 时写入 args.gn 等。默认 out/Default 或环境变量 SIMPRINT_OUT_DIR",
+        help="Chromium 输出目录（相对 Chromium 根），如 out/Default、out/Release；用于 deploy 时写入 args.gn 等。默认 out/Default 或环境变量 MZ_OUT_DIR",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

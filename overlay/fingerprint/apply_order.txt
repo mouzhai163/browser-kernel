@@ -1,4 +1,4 @@
-# Simprint Fingerprint Overlay - Patch Application Order
+# MZ Fingerprint Overlay - Patch Application Order
 # 指纹防护模块：配置系统 + 浏览器指纹伪装（Canvas、WebGL、Audio、字体等）
 # 由 git diff 879a34261b0ba..1a044afbb2149 生成
 
@@ -38,11 +38,11 @@
 # Services
 026-services-network-context.patch
 
-# Simprint
-027-simprint-auth-build-gn.patch
-028-simprint-startup-auth-checker.patch
-029-simprint-eventbus-build-gn.patch
-030-simprint-eventbus.patch
+# MZ
+027-mz-auth-build-gn.patch
+028-mz-startup-auth-checker.patch
+029-mz-eventbus-build-gn.patch
+030-mz-eventbus.patch
 
 # Blink Core
 031-blink-core-build-gn.patch

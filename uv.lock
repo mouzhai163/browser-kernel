@@ -176,7 +176,7 @@ wheels = [
 ]
 
 [[package]]
-name = "simprint-browser-kernel"
+name = "mz-browser-kernel"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

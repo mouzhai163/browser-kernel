@@ -7,7 +7,7 @@ index 9c6766fc3b3b8..c35cfe2534c30 100644
  #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
  #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 +#include "base/logging.h"
-+#include "simprint/fingerprint/network_location_fingerprint.h"
++#include "mz/fingerprint/network_location_fingerprint.h"
  #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
  #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
  #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -15,8 +15,8 @@ index 9c6766fc3b3b8..c35cfe2534c30 100644
  }
  
  String FrameLoader::UserAgent() const {
-+  // Simprint: 优先使用指纹配置的 UserAgent
-+  std::string configured_ua = simprint::fingerprint::NetworkLocationFingerprint::GetConfiguredUserAgent();
++  // MZ: 优先使用指纹配置的 UserAgent
++  std::string configured_ua = mz::fingerprint::NetworkLocationFingerprint::GetConfiguredUserAgent();
 +  if (!configured_ua.empty()) {
 +    LOG(INFO) << "FrameLoader::UserAgent() returning configured UA: " << configured_ua;
 +    return String::FromUtf8(configured_ua);

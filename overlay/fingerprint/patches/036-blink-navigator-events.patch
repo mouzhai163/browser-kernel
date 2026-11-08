@@ -6,13 +6,13 @@ index a57561775c119..ea231fb71ab21 100644
  #include "third_party/blink/renderer/core/frame/local_frame.h"
  #include "third_party/blink/renderer/core/frame/navigator.h"
  #include "third_party/blink/renderer/core/frame/settings.h"
-+#include "simprint/fingerprint/screen_hardware_fingerprint.h"
++#include "mz/fingerprint/screen_hardware_fingerprint.h"
  
  namespace blink {
  
  int32_t NavigatorEvents::maxTouchPoints(Navigator& navigator) {
-+  // Simprint: 应用最大触摸点数指纹
-+  int configured_touch_points = simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints();
++  // MZ: 应用最大触摸点数指纹
++  int configured_touch_points = mz::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints();
 +  if (configured_touch_points >= 0) {
 +    return configured_touch_points;
 +  }

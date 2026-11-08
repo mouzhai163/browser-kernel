@@ -1,0 +1,12 @@
+diff --git a/mz/eventbus/BUILD.gn b/mz/eventbus/BUILD.gn
+index bd16689afbf7c..d7cd7ebd01ab7 100644
+--- a/mz/eventbus/BUILD.gn
++++ b/mz/eventbus/BUILD.gn
+@@ -22,7 +22,6 @@ source_set("eventbus") {
+   deps = [
+     "//base",
+     "//chrome/browser:browser_process",
+-    "//mz/console_log",
+   ]
+ 
+   # Windows Named Pipe 需要的库

@@ -1,7 +1,7 @@
 """
 Overlay branding 单元：产品名、图标、主题等对 Chromium 源码的修改。
 由 driver 调用：python overlay/branding/run.py <phase>
-环境变量：SIMPRINT_CHROMIUM_ROOT, SIMPRINT_KERNEL_ROOT
+环境变量：MZ_CHROMIUM_ROOT, MZ_KERNEL_ROOT
 """
 import os
 import subprocess
@@ -17,16 +17,16 @@ from driver.patching import read_normalized_patch  # noqa: E402
 
 
 def _chromium_src() -> Path:
-    src = os.environ.get("SIMPRINT_CHROMIUM_ROOT")
+    src = os.environ.get("MZ_CHROMIUM_ROOT")
     if not src:
-        raise SystemExit("SIMPRINT_CHROMIUM_ROOT not set")
+        raise SystemExit("MZ_CHROMIUM_ROOT not set")
     return Path(src).resolve()
 
 
 def _kernel_root() -> Path:
-    root = os.environ.get("SIMPRINT_KERNEL_ROOT")
+    root = os.environ.get("MZ_KERNEL_ROOT")
     if not root:
-        raise SystemExit("SIMPRINT_KERNEL_ROOT not set")
+        raise SystemExit("MZ_KERNEL_ROOT not set")
     return Path(root).resolve()
 
 
@@ -101,7 +101,7 @@ def apply_() -> None:
             r = subprocess.run(
                 [sys.executable, str(patch_file)],
                 cwd=str(PROJECT_ROOT),
-                env={**os.environ, "SIMPRINT_CHROMIUM_ROOT": str(chromium_src)},
+                env={**os.environ, "MZ_CHROMIUM_ROOT": str(chromium_src)},
             )
             if r.returncode != 0:
                 raise SystemExit(f"script failed: {patch_file} (exit {r.returncode})")

@@ -6,7 +6,7 @@ index 50a1727f8dbd5..699c700a20363 100644
  #include "build/build_config.h"
  #include "third_party/blink/public/common/features.h"
  #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-+#include "simprint/fingerprint/network_location_fingerprint.h"
++#include "mz/fingerprint/network_location_fingerprint.h"
  
  #if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
  #include <sys/utsname.h>
@@ -15,7 +15,7 @@ index 50a1727f8dbd5..699c700a20363 100644
  
  String NavigatorID::platform() const {
 +  // 指纹拦截：检查是否配置了自定义 platform
-+  std::string configured_platform = simprint::fingerprint::NetworkLocationFingerprint::GetConfiguredPlatform();
++  std::string configured_platform = mz::fingerprint::NetworkLocationFingerprint::GetConfiguredPlatform();
 +  if (!configured_platform.empty()) {
 +    return String(configured_platform.c_str());
 +  }

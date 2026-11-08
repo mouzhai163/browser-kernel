@@ -5,11 +5,11 @@ diff --git a/chrome/common/chrome_switches.h b/chrome/common/chrome_switches.h
  // UserDatadir.
  inline constexpr char kDiskCacheDir[] = "disk-cache-dir";
 
-+// Specifies the Simprint environment ID (UUID).
-+inline constexpr char kSimprintEnvId[] = "simprint-env-id";
++// Specifies the MZ environment ID (UUID).
++inline constexpr char kMzEnvId[] = "mz-env-id";
 +
-+// Specifies the Simprint display ID (numeric) shown on the taskbar badge.
-+inline constexpr char kSimprintDisplayId[] = "simprint-display-id";
++// Specifies the MZ display ID (numeric) shown on the taskbar badge.
++inline constexpr char kMzDisplayId[] = "mz-display-id";
 +
  // Forces the maximum disk space to be used by the disk cache, in bytes.
  inline constexpr char kDiskCacheSize[] = "disk-cache-size";

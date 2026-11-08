@@ -5,7 +5,7 @@ diff --git a/chrome/browser/ui/views/frame/browser_desktop_window_tree_host_win.
  #include "chrome/browser/ui/views/frame/browser_frame_view_win.h"
  #include "chrome/browser/ui/views/frame/browser_view.h"
  #include "chrome/browser/ui/views/frame/browser_widget.h"
-+#include "chrome/browser/simprint/window_icon_manager_win.h"
++#include "chrome/browser/mz/window_icon_manager_win.h"
 +#include "chrome/common/chrome_switches.h"
 +#include "base/command_line.h"
  #include "chrome/browser/ui/views/frame/browser_window_property_manager_win.h"
@@ -22,23 +22,23 @@ diff --git a/chrome/browser/ui/views/frame/browser_desktop_window_tree_host_win.
 -          ->GetProfileAttributesStorage()
 -          .GetNumberOfProfiles() > 1) {
 -    SetWindowIcon(/*badged=*/true);
-+  // Check if Simprint environment ID is provided via command line
++  // Check if MZ environment ID is provided via command line
 +  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-+  if (command_line->HasSwitch(switches::kSimprintEnvId)) {
-+    std::string env_id = command_line->GetSwitchValueASCII(switches::kSimprintEnvId);
-+    std::string display_id = command_line->GetSwitchValueASCII(switches::kSimprintDisplayId);
++  if (command_line->HasSwitch(switches::kMzEnvId)) {
++    std::string env_id = command_line->GetSwitchValueASCII(switches::kMzEnvId);
++    std::string display_id = command_line->GetSwitchValueASCII(switches::kMzDisplayId);
 +
-+    LOG(INFO) << "[Simprint] Setting custom window icon for env_id: " << env_id
++    LOG(INFO) << "[MZ] Setting custom window icon for env_id: " << env_id
 +              << ", display_id: " << display_id;
 +
 +    // Generate or get icon path, then set window icon
 +    base::FilePath user_data_dir = browser_view_->GetProfile()->GetPath().DirName();
 +
-+    base::FilePath icon_path = simprint::WindowIconManager::GenerateOrGetIconPath(
++    base::FilePath icon_path = mz::WindowIconManager::GenerateOrGetIconPath(
 +        user_data_dir, env_id, display_id);
 +
 +    if (!icon_path.empty()) {
-+      simprint::WindowIconManager::SetWindowIcon(GetHWND(), icon_path);
++      mz::WindowIconManager::SetWindowIcon(GetHWND(), icon_path);
 +    }
 +  } else {
 +    // Use the profile icon as the browser window icon, if there is more

@@ -6,7 +6,7 @@ index 3982a99aa2d9e..6ef2fa59542c4 100644
      "//components/prefs",
      "//ui/base",
      "//ui/display",
-+    "//simprint/fingerprint",
++    "//mz/fingerprint",
    ]
  
    if (is_mac) {

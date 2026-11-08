@@ -6,7 +6,7 @@ index 900df063b86fa..bc78819660e36 100644
  #include <utility>
  #include <vector>
  
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/config/fingerprint_config_storage.h"
 +
  #include "base/base_switches.h"
  #include "base/byte_count.h"

@@ -2,7 +2,7 @@
 
 ## 功能概述
 
-Auth 模块为 Simprint 浏览器内核添加启动时的强制认证检查功能，确保只有通过 Tauri 启动且已登录的用户才能使用浏览器。
+Auth 模块为 MZ 浏览器内核添加启动时的强制认证检查功能，确保只有通过 Tauri 启动且已登录的用户才能使用浏览器。
 
 ## 主要功能
 
@@ -25,7 +25,7 @@ Auth 模块为 Simprint 浏览器内核添加启动时的强制认证检查功�
 ```
 overlay/auth/
 ├── sources/
-│   └── simprint/
+│   └── mz/
 │       └── auth/
 │           ├── BUILD.gn                    # 编译配置
 │           ├── auth_manager.h              # 认证管理器头文件
@@ -34,15 +34,15 @@ overlay/auth/
 │           ├── startup_auth_checker.cc     # 启动认证检查器实现
 │           └── README.md                   # 使用文档
 ├── patches/
-│   ├── 001-chrome-browser-build-gn.patch           # 添加 simprint/auth 依赖
+│   ├── 001-chrome-browser-build-gn.patch           # 添加 mz/auth 依赖
 │   ├── 002-chrome-browser-main.patch               # 集成启动认证检查
 │   ├── 003-eventbus-topics-h.patch                 # 添加 kLaunchConfig Topic
 │   ├── 004-eventbus-h.patch                        # 添加 AuthInfo 结构和认证方法
 │   ├── 005-eventbus-cc.patch                       # 实现 LaunchConfig/AuthRequest/AuthResponse 处理
-│   ├── 006-sync-input-capture-handler.patch        # 移除 SIMPRINT_LOG 调用
-│   └── 007-sync-input-replay.patch                 # 移除 SIMPRINT_LOG 调用
+│   ├── 006-sync-input-capture-handler.patch        # 移除 MZ_LOG 调用
+│   └── 007-sync-input-replay.patch                 # 移除 MZ_LOG 调用
 ├── scripts/
-│   └── deploy_resources.py                # 部署脚本：复制 simprint/auth 源文件
+│   └── deploy_resources.py                # 部署脚本：复制 mz/auth 源文件
 ├── apply_order.txt                         # 补丁应用顺序
 ├── run.py                                  # 主运行脚本
 └── README.md                               # 本文件
@@ -52,19 +52,19 @@ overlay/auth/
 ## 技术实现
 
 ### 新增文件
-- `simprint/auth/auth_manager.{h,cc}`: 认证管理器，封装 EventBus 认证功能
-- `simprint/auth/startup_auth_checker.{h,cc}`: 启动认证检查器，强制认证检查
-- `simprint/auth/BUILD.gn`: 编译配置
-- `simprint/auth/README.md`: 使用文档
+- `mz/auth/auth_manager.{h,cc}`: 认证管理器，封装 EventBus 认证功能
+- `mz/auth/startup_auth_checker.{h,cc}`: 启动认证检查器，强制认证检查
+- `mz/auth/BUILD.gn`: 编译配置
+- `mz/auth/README.md`: 使用文档
 
 ### 修改文件
-- `chrome/browser/BUILD.gn`: 添加 `//simprint/auth` 依赖
+- `chrome/browser/BUILD.gn`: 添加 `//mz/auth` 依赖
 - `chrome/browser/chrome_browser_main.cc`: 在 `PostBrowserStart()` 中集成启动认证检查
-- `simprint/eventbus/topics.h`: 添加 `kLaunchConfig = 0x0900` Topic
-- `simprint/eventbus/eventbus.h`: 添加 `AuthInfo` 结构、认证回调、认证请求方法
-- `simprint/eventbus/eventbus.cc`: 实现 LaunchConfig/AuthRequest/AuthResponse 处理逻辑
-- `chrome/browser/ui/views/frame/sync_input_capture_handler.cc`: 移除跨文件 SIMPRINT_LOG 调用
-- `chrome/browser/ui/views/frame/sync_input_replay.cc`: 移除跨文件 SIMPRINT_LOG 调用
+- `mz/eventbus/topics.h`: 添加 `kLaunchConfig = 0x0900` Topic
+- `mz/eventbus/eventbus.h`: 添加 `AuthInfo` 结构、认证回调、认证请求方法
+- `mz/eventbus/eventbus.cc`: 实现 LaunchConfig/AuthRequest/AuthResponse 处理逻辑
+- `chrome/browser/ui/views/frame/sync_input_capture_handler.cc`: 移除跨文件 MZ_LOG 调用
+- `chrome/browser/ui/views/frame/sync_input_replay.cc`: 移除跨文件 MZ_LOG 调用
 
 ## 依赖关系
 
@@ -76,7 +76,7 @@ Auth 模块依赖以下模块（需要在 `driver/order.txt` 中先执行）：
 ```
 浏览器启动
     ↓
-检查 --simprint-env-id 参数
+检查 --mz-env-id 参数
     ↓
 有参数 → 初始化 EventBus → 发送 AuthRequest → 等待 AuthResponse (5秒超时)
     ↓                                                      ↓
@@ -89,15 +89,15 @@ Auth 模块依赖以下模块（需要在 `driver/order.txt` 中先执行）：
 
 ## 相关提交
 
-- simprint-browser commit `879a342`: 添加启动认证检查和 LaunchConfig 支持
-- simprint-browser commit `9be2688`: 移除 sync_input_*.cc 中的 SIMPRINT_LOG 调用
+- mz-browser commit `879a342`: 添加启动认证检查和 LaunchConfig 支持
+- mz-browser commit `9be2688`: 移除 sync_input_*.cc 中的 MZ_LOG 调用
 
 ## 注意事项
 
 1. **依赖顺序**: Auth 模块必须在 syner 模块之后执行
 2. **安全策略**: 采用 fail-safe 机制，任何异常情况都会导致浏览器退出
 3. **IPC 超时**: 默认 5 秒超时，可在 `chrome_browser_main.cc` 中调整
-4. **日志输出**: 使用 `simprint::LogToConsole()` 输出调试日志到 Tauri 控制台
+4. **日志输出**: 使用 `mz::LogToConsole()` 输出调试日志到 Tauri 控制台
 
 ## 测试验证
 

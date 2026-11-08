@@ -14,7 +14,7 @@ index d273eaaf76f75..a2480b52cc2d8 100644
  #include "base/win/scoped_handle.h"
  #include "net/base/ip_endpoint.h"
  #include "net/base/net_errors.h"
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/config/fingerprint_config_storage.h"
  #include "url/gurl.h"
  
  namespace net {
@@ -22,8 +22,8 @@ index d273eaaf76f75..a2480b52cc2d8 100644
        mac_address.reset();
      }
  
-+    // Simprint: 拦截 MAC 地址
-+    std::string configured_mac = simprint::config::GetMacAddress();
++    // MZ: 拦截 MAC 地址
++    std::string configured_mac = mz::config::GetMacAddress();
 +    if (!configured_mac.empty() && mac_address.has_value()) {
 +      // 解析配置的 MAC 地址 (格式: "AA:BB:CC:DD:EE:FF")
 +      if (configured_mac.length() == 17) {  // "XX:XX:XX:XX:XX:XX"

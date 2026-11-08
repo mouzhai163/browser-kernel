@@ -11,26 +11,26 @@
 
 ### 保留的功能
 - ✅ 背景 Canvas 动画（六边形网格 + 流动光带）
-- ✅ simprint_ip 后端功能（保留但前端不再调用）
+- ✅ mz_ip 后端功能（保留但前端不再调用）
 
 ### 修改的文件
 
 #### 删除的文件
 - `patches/004-app-css.patch` - customizer 按钮位置偏移
 - `patches/008-customize-buttons-css.patch` - customizer 按钮样式和延迟显示
-- `resources/simprint_ip_proxy.ts` - IP 检测前端代理
+- `resources/mz_ip_proxy.ts` - IP 检测前端代理
 
 #### 修改的文件
-- `resources/simprint_ntp.ts` - 从 952 行简化到 120 行，仅保留背景动画
-- `patches/005-new-tab-page-gni.patch` - 移除 simprint_ip_proxy.ts 引用
+- `resources/mz_ntp.ts` - 从 952 行简化到 120 行，仅保留背景动画
+- `patches/005-new-tab-page-gni.patch` - 移除 mz_ip_proxy.ts 引用
 - `apply_order.txt` - 移除补丁 004 和 008
 - `README.md` - 更新文档说明
 
 ### 代码统计
-- **删除代码**: ~830 行（simprint_ntp.ts 中的面板代码）
+- **删除代码**: ~830 行（mz_ntp.ts 中的面板代码）
 - **删除补丁**: 2 个（004, 008）
 - **保留补丁**: 10 个
-- **最终 simprint_ntp.ts**: 120 行（纯背景动画）
+- **最终 mz_ntp.ts**: 120 行（纯背景动画）
 
 ### 效果
 新标签页现在只显示：

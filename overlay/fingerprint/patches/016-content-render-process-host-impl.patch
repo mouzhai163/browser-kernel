@@ -7,7 +7,7 @@ index 6ad685197a92c..917e4ecd6cba9 100644
  
  #include <algorithm>
 +
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/config/fingerprint_config_storage.h"
  #include <atomic>
  #include <limits>
  #include <list>
@@ -16,19 +16,19 @@ index 6ad685197a92c..917e4ecd6cba9 100644
    TRACE_EVENT("navigation", "RenderProcessHostImpl::Init",
                perfetto::Flow::Global(trace_id));
 +
-+  // Simprint: 优先使用指纹配置的 UserAgent
-+  std::string user_agent = simprint::config::GetUserAgent();
++  // MZ: 优先使用指纹配置的 UserAgent
++  std::string user_agent = mz::config::GetUserAgent();
 +  if (user_agent.empty()) {
 +    user_agent = GetContentClient()->browser()->GetUserAgent();
 +  }
 +  LOG(INFO) << "RenderProcessHostImpl::Init() using UserAgent: " << user_agent;
 +
-+  // Simprint: 导出所有指纹配置为 JSON，传递给 Renderer 进程
-+  std::string fingerprint_config_json = simprint::config::ExportAllConfigAsJson();
-+  LOG(INFO) << "[Simprint Config] RenderProcessHostImpl::Init() - Exporting config for Renderer process";
-+  LOG(INFO) << "[Simprint Config] RenderProcessHostImpl::Init() - Config size: "
++  // MZ: 导出所有指纹配置为 JSON，传递给 Renderer 进程
++  std::string fingerprint_config_json = mz::config::ExportAllConfigAsJson();
++  LOG(INFO) << "[MZ Config] RenderProcessHostImpl::Init() - Exporting config for Renderer process";
++  LOG(INFO) << "[MZ Config] RenderProcessHostImpl::Init() - Config size: "
 +            << fingerprint_config_json.size() << " bytes";
-+  LOG(INFO) << "[Simprint Config] RenderProcessHostImpl::Init() - Config content: " << fingerprint_config_json;
++  LOG(INFO) << "[MZ Config] RenderProcessHostImpl::Init() - Config content: " << fingerprint_config_json;
 +
    GetRendererInterface()->InitializeRenderer(
 -      GetContentClient()->browser()->GetUserAgent(),

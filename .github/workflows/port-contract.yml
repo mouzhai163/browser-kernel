@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - "simprint/m*"
+      - "mz/m*"
       - "refactor/**"
   pull_request:
   workflow_dispatch:

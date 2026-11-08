@@ -6,14 +6,14 @@ index 73fe45f650683..296d8c59085bb 100644
  #include "third_party/blink/renderer/core/frame/local_frame.h"
  #include "third_party/blink/renderer/core/frame/local_frame_client.h"
  #include "third_party/blink/renderer/core/frame/navigator.h"
-+#include "simprint/fingerprint/behavior_device_settings.h"
++#include "mz/fingerprint/behavior_device_settings.h"
  
  namespace blink {
  namespace NavigatorDoNotTrack {
  
  String doNotTrack(Navigator& navigator) {
 +  // 指纹拦截：检查是否配置了自定义 Do Not Track
-+  std::optional<bool> configured_dnt = simprint::fingerprint::BehaviorDeviceSettings::GetConfiguredDoNotTrack();
++  std::optional<bool> configured_dnt = mz::fingerprint::BehaviorDeviceSettings::GetConfiguredDoNotTrack();
 +  if (configured_dnt.has_value()) {
 +    // 真实 Chrome 在没有开启 DNT 时返回 null，而不是 "0"。
 +    if (!configured_dnt.value()) {

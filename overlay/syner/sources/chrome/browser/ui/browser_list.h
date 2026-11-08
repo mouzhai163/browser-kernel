@@ -1,4 +1,4 @@
-// Simprint compatibility shim.
+// MZ compatibility shim.
 //
 // Upstream removed chrome/browser/ui/browser_list.h in favour of
 // GlobalBrowserCollection. This keeps the range-for idiom

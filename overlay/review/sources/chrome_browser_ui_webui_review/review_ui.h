@@ -16,14 +16,14 @@ class ReviewPageHandler;
 
 class ReviewUI;
 
-// WebUI config for simprint://review
+// WebUI config for mz://review
 class ReviewUIConfig : public content::DefaultWebUIConfig<ReviewUI> {
  public:
   ReviewUIConfig();
   ~ReviewUIConfig() override = default;
 };
 
-// WebUI controller for simprint://review
+// WebUI controller for mz://review
 class ReviewUI : public ui::MojoWebUIController {
  public:
   explicit ReviewUI(content::WebUI* web_ui);

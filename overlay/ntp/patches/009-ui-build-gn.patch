@@ -5,8 +5,8 @@ diff --git a/chrome/browser/ui/webui/new_tab_page/BUILD.gn b/chrome/browser/ui/w
    sources = [
      "new_tab_page_handler.cc",
      "new_tab_page_ui.cc",
-+    "simprint_ip/simprint_ip_handler.cc",
-+    "simprint_ip/simprint_ip_handler.h",
++    "mz_ip/mz_ip_handler.cc",
++    "mz_ip/mz_ip_handler.h",
      "untrusted_source.cc",
    ]
    public = [ "new_tab_page_handler.h" ]

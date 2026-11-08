@@ -14,14 +14,14 @@ def run(chromium_src: Path, kernel_root: Path, project_root: Path) -> None:
         print("No sources directory found, skipping deploy.")
         return
 
-    # 复制 simprint/auth
-    src_auth = sources_dir / "simprint" / "auth"
-    dst_auth = chromium_src / "simprint" / "auth"
+    # 复制 mz/auth
+    src_auth = sources_dir / "mz" / "auth"
+    dst_auth = chromium_src / "mz" / "auth"
     if src_auth.is_dir():
         dst_auth.mkdir(parents=True, exist_ok=True)
         for f in src_auth.iterdir():
             if f.is_file():
                 shutil.copy2(f, dst_auth / f.name)
-                print(f"  {f.name} -> simprint/auth/")
+                print(f"  {f.name} -> mz/auth/")
 
     print("Done. Auth sources deployed.")

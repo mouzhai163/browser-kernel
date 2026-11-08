@@ -6,8 +6,8 @@ diff --git a/chrome/browser/chrome_content_browser_client.cc b/chrome/browser/ch
  #include "chrome/browser/performance_manager/public/chrome_browser_main_extra_parts_performance_manager.h"
  #include "chrome/browser/performance_manager/public/chrome_content_browser_client_performance_manager_part.h"
 +#include "content/public/browser/login_delegate.h"
-+#include "simprint/proxy/network_context_configurator.h"
-+#include "simprint/simprint_browser_context.h"
++#include "mz/proxy/network_context_configurator.h"
++#include "mz/mz_browser_context.h"
  #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
  #include "chrome/browser/picture_in_picture/scoped_tuck_picture_in_picture.h"
  #include "chrome/browser/picture_in_picture/video_overlay_window.h"
@@ -15,19 +15,19 @@ diff --git a/chrome/browser/chrome_content_browser_client.cc b/chrome/browser/ch
    return *s;
  }
  
-+class SimprintProxyLoginDelegate : public content::LoginDelegate {
++class MzProxyLoginDelegate : public content::LoginDelegate {
 + public:
-+  SimprintProxyLoginDelegate(
++  MzProxyLoginDelegate(
 +      const net::AuthCredentials& credentials,
 +      LoginAuthRequiredCallback auth_required_callback) {
 +    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
 +        FROM_HERE,
-+        base::BindOnce(&SimprintProxyLoginDelegate::Respond,
++        base::BindOnce(&MzProxyLoginDelegate::Respond,
 +                       weak_factory_.GetWeakPtr(), credentials,
 +                       std::move(auth_required_callback)));
 +  }
 +
-+  ~SimprintProxyLoginDelegate() override = default;
++  ~MzProxyLoginDelegate() override = default;
 +
 + private:
 +  void Respond(const net::AuthCredentials& credentials,
@@ -35,7 +35,7 @@ diff --git a/chrome/browser/chrome_content_browser_client.cc b/chrome/browser/ch
 +    std::move(auth_required_callback).Run(credentials);
 +  }
 +
-+  base::WeakPtrFactory<SimprintProxyLoginDelegate> weak_factory_{this};
++  base::WeakPtrFactory<MzProxyLoginDelegate> weak_factory_{this};
 +};
 +
  // Returns a copy of the given url with its host set to given host and path set
@@ -46,16 +46,16 @@ diff --git a/chrome/browser/chrome_content_browser_client.cc b/chrome/browser/ch
      content::GuestPageHolder* guest,
      content::LoginDelegate::LoginAuthRequiredCallback auth_required_callback) {
 +#if BUILDFLAG(IS_WIN)
-+  if (base::CommandLine::ForCurrentProcess()->HasSwitch("simprint-env-id") &&
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("mz-env-id") &&
 +      auth_info.is_proxy) {
-+    LOG(INFO) << "Intercepted proxy auth challenge for Simprint browser";
-+    auto* simprint_context = simprint::SimprintBrowserContext::GetInstance();
-+    if (simprint_context && simprint_context->network_context_configurator()) {
++    LOG(INFO) << "Intercepted proxy auth challenge for MZ browser";
++    auto* mz_context = mz::MzBrowserContext::GetInstance();
++    if (mz_context && mz_context->network_context_configurator()) {
 +      std::optional<net::AuthCredentials> credentials =
-+          simprint_context->network_context_configurator()
++          mz_context->network_context_configurator()
 +              ->GetProxyAuthCredentials(auth_info, first_auth_attempt);
 +      if (credentials) {
-+        return std::make_unique<SimprintProxyLoginDelegate>(
++        return std::make_unique<MzProxyLoginDelegate>(
 +            *credentials, std::move(auth_required_callback));
 +      }
 +    }

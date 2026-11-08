@@ -5,7 +5,7 @@ diff --git a/chrome/browser/ui/startup/infobar_utils.cc b/chrome/browser/ui/star
    infobars::ContentInfoBarManager* infobar_manager =
        infobars::ContentInfoBarManager::FromWebContents(web_contents);
 
-+#if 0  // Simprint: Disable Google API keys missing infobar
++#if 0  // MZ: Disable Google API keys missing infobar
    if (!google_apis::HasAPIKeyConfigured()) {
      if (infobars::IsInfoBarMigrated(
              infobars::InfoBarDelegate::GOOGLE_API_KEYS_INFOBAR_DELEGATE)) {
@@ -27,7 +27,7 @@ diff --git a/chrome/browser/ui/startup/infobar_utils.cc b/chrome/browser/ui/star
    }
 
  #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
-+#if 0  // Simprint: Disable Session Restore infobar
++#if 0  // MZ: Disable Session Restore infobar
    if (base::FeatureList::IsEnabled(features::kSessionRestoreInfobar)) {
      auto* session_restore_infobar_controller =
          session_restore_infobar::SessionRestoreInfobarController::From(browser);
@@ -37,7 +37,7 @@ diff --git a/chrome/browser/ui/startup/infobar_utils.cc b/chrome/browser/ui/star
 +#endif
  #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 
-+#if 0  // Simprint: Disable default browser prompt infobar
++#if 0  // MZ: Disable default browser prompt infobar
    // The default browser prompt should only be shown after the first run.
    if (is_first_run == chrome::startup::IsFirstRun::kNo) {
  #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)

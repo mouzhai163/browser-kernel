@@ -5,8 +5,8 @@ diff --git a/third_party/blink/renderer/core/frame/navigator_language.cc b/third
  #include "third_party/blink/renderer/core/probe/core_probes.h"
  #include "third_party/blink/renderer/platform/language.h"
  #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-+#include "simprint/fingerprint/network_location_fingerprint.h"
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/fingerprint/network_location_fingerprint.h"
++#include "mz/config/fingerprint_config_storage.h"
  
  namespace blink {
  
@@ -14,19 +14,19 @@ diff --git a/third_party/blink/renderer/core/frame/navigator_language.cc b/third
  }
  
  void NavigatorLanguage::EnsureUpdatedLanguage() {
-+  // Simprint: 检查是否有指纹配置的语言
++  // MZ: 检查是否有指纹配置的语言
 +  std::string configured_language =
-+      simprint::fingerprint::NetworkLocationFingerprint::GetConfiguredLanguage();
-+  LOG(INFO) << "[Simprint Language] NavigatorLanguage::EnsureUpdatedLanguage - configured_language: " << configured_language;
++      mz::fingerprint::NetworkLocationFingerprint::GetConfiguredLanguage();
++  LOG(INFO) << "[MZ Language] NavigatorLanguage::EnsureUpdatedLanguage - configured_language: " << configured_language;
 +  if (!configured_language.empty()) {
 +    // 与 Accept-Language 头保持一致（例如 ["en-US", "en"]），而不是只放一个。
 +    std::string language_list;
-+    for (const std::string& language : simprint::config::GetLanguageList()) {
++    for (const std::string& language : mz::config::GetLanguageList()) {
 +      language_list += (language_list.empty() ? "" : ",") + language;
 +    }
 +    languages_ = ParseAndSanitize(String::FromUtf8(language_list));
 +    languages_dirty_ = false;
-+    LOG(INFO) << "[Simprint Language] NavigatorLanguage::EnsureUpdatedLanguage - set languages_ to: " << configured_language;
++    LOG(INFO) << "[MZ Language] NavigatorLanguage::EnsureUpdatedLanguage - set languages_ to: " << configured_language;
 +    return;
 +  }
 +

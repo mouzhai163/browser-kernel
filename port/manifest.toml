@@ -1,13 +1,13 @@
 schema_version = 1
 
 [port]
-name = "simprint-chromium"
+name = "mz-chromium"
 chromium_version = "144.0.7559.118"
 chromium_milestone = 144
 core_api = 1
 
 # One branch represents one Chromium port. Do not add milestone directories
-# below this file; create a branch such as simprint/m145 instead.
+# below this file; create a branch such as mz/m145 instead.
 
 [[capabilities]]
 id = "branding"

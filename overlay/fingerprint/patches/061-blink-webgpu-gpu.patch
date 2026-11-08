@@ -6,7 +6,7 @@ index 91608a830d9f0..abf27e1c011c2 100644
  #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
  #include "third_party/blink/renderer/platform/weborigin/kurl.h"
  #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
-+#include "simprint/fingerprint/browser_fingerprint.h"
++#include "mz/fingerprint/browser_fingerprint.h"
  
  namespace blink {
  
@@ -14,8 +14,8 @@ index 91608a830d9f0..abf27e1c011c2 100644
  ScriptPromise<IDLNullable<GPUAdapter>> GPU::requestAdapter(
      ScriptState* script_state,
      const GPURequestAdapterOptions* options) {
-+  // Simprint: 检查 WebGPU 配置
-+  std::string webgpu_mode = simprint::fingerprint::BrowserFingerprint::GetConfiguredWebGPUMode();
++  // MZ: 检查 WebGPU 配置
++  std::string webgpu_mode = mz::fingerprint::BrowserFingerprint::GetConfiguredWebGPUMode();
 +
 +  if (webgpu_mode == "disable") {
 +    // 禁用 WebGPU，直接返回 null

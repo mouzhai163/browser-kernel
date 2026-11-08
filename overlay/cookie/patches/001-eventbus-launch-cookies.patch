@@ -1,7 +1,7 @@
-diff --git a/simprint/eventbus/eventbus.cc b/simprint/eventbus/eventbus.cc
+diff --git a/mz/eventbus/eventbus.cc b/mz/eventbus/eventbus.cc
 index ebe402df66e0f..91b95bf5f5dfc 100644
---- a/simprint/eventbus/eventbus.cc
-+++ b/simprint/eventbus/eventbus.cc
+--- a/mz/eventbus/eventbus.cc
++++ b/mz/eventbus/eventbus.cc
 @@ -6,12 +6,22 @@
  #include <algorithm>
  #include <atomic>
@@ -29,8 +29,8 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
  #include "chrome/browser/ui/browser_window.h"
  #include "chrome/browser/ui/tabs/tab_strip_model.h"
  #include "chrome/browser/ui/browser_tabstrip.h"
--#include "simprint/fingerprint/fingerprint_config.h"
--#include "simprint/config/fingerprint_config_storage.h"
+-#include "mz/fingerprint/fingerprint_config.h"
+-#include "mz/config/fingerprint_config_storage.h"
 -#include "ui/gfx/geometry/rect.h"
 -#include "base/functional/bind.h"
 -#include "base/strings/utf_string_conversions.h"
@@ -49,12 +49,12 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +#include "net/cookies/cookie_constants.h"
 +#include "net/cookies/cookie_options.h"
 +#include "services/network/public/mojom/cookie_manager.mojom.h"
-+#include "simprint/config/fingerprint_config_storage.h"
-+#include "simprint/fingerprint/fingerprint_config.h"
++#include "mz/config/fingerprint_config_storage.h"
++#include "mz/fingerprint/fingerprint_config.h"
 +#include "ui/gfx/geometry/rect.h"
  
  // 统一日志输出
- #define SIMPRINT_LOG(msg) LOG(INFO) << "[Simprint][EventBus] " << msg
+ #define MZ_LOG(msg) LOG(INFO) << "[MZ][EventBus] " << msg
 @@ -54,6 +67,575 @@ namespace eventbus {
  namespace {
  // 同步角色：0=关闭 1=主控 2=从控，由 Tauri 下发 SyncRole 消息设置；供后续视图层捕获/重放使用
@@ -150,7 +150,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +  }
 +
 +  if (retries_remaining <= 0) {
-+    SIMPRINT_LOG(source << ": Profile 尚未就绪，放弃执行");
++    MZ_LOG(source << ": Profile 尚未就绪，放弃执行");
 +    return;
 +  }
 +
@@ -172,7 +172,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +  Browser* browser = FindAnyTabbedBrowserForProfile(profile);
 +  if (!browser) {
 +    if (retries_remaining <= 0) {
-+      SIMPRINT_LOG(source << ": 浏览器窗口尚未就绪，放弃打开 " << urls.size() << " 个 URL");
++      MZ_LOG(source << ": 浏览器窗口尚未就绪，放弃打开 " << urls.size() << " 个 URL");
 +      return;
 +    }
 +
@@ -186,11 +186,11 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +
 +  for (const GURL& url : urls) {
 +    if (BrowserAlreadyHasUrl(browser, url)) {
-+      SIMPRINT_LOG(source << ": 标签页已存在，跳过 " << url.spec());
++      MZ_LOG(source << ": 标签页已存在，跳过 " << url.spec());
 +      continue;
 +    }
 +
-+    SIMPRINT_LOG(source << ": 打开标签页 " << url.spec());
++    MZ_LOG(source << ": 打开标签页 " << url.spec());
 +    chrome::AddTabAt(browser, url, -1, false);
 +  }
 +}
@@ -209,7 +209,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +
 +    GURL url(value.GetString());
 +    if (!url.is_valid()) {
-+      SIMPRINT_LOG(source << ": 无效的 URL: " << value.GetString());
++      MZ_LOG(source << ": 无效的 URL: " << value.GetString());
 +      continue;
 +    }
 +
@@ -242,7 +242,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +  std::string site_input(
 +      base::TrimWhitespaceASCII(site, base::TRIM_ALL));
 +  if (site_input.empty()) {
-+    SIMPRINT_LOG(source << ": Cookie 目标网页/域名不能为空");
++    MZ_LOG(source << ": Cookie 目标网页/域名不能为空");
 +    return std::nullopt;
 +  }
 +
@@ -279,7 +279,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +    }
 +  }
 +
-+  SIMPRINT_LOG(source << ": 无效的 Cookie 目标网页/域名: " << site_input);
++  MZ_LOG(source << ": 无效的 Cookie 目标网页/域名: " << site_input);
 +  return std::nullopt;
 +}
 +
@@ -317,7 +317,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +      base::TrimWhitespaceASCII(part, base::TRIM_ALL));
 +  size_t eq_pos = trimmed.find('=');
 +  if (eq_pos == std::string::npos) {
-+    SIMPRINT_LOG(source << ": 无效的 Cookie 格式: " << trimmed);
++    MZ_LOG(source << ": 无效的 Cookie 格式: " << trimmed);
 +    return std::nullopt;
 +  }
 +
@@ -326,7 +326,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +  std::string value(base::TrimWhitespaceASCII(trimmed.substr(eq_pos + 1),
 +                                              base::TRIM_ALL));
 +  if (name.empty()) {
-+    SIMPRINT_LOG(source << ": Cookie 名称不能为空: " << trimmed);
++    MZ_LOG(source << ": Cookie 名称不能为空: " << trimmed);
 +    return std::nullopt;
 +  }
 +
@@ -356,7 +356,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +    std::string_view source) {
 +  GURL source_url = BuildCookieSourceUrl(domain, path, secure);
 +  if (!source_url.is_valid()) {
-+    SIMPRINT_LOG(source << ": 无法构造 Cookie source URL, domain=" << domain
++    MZ_LOG(source << ": 无法构造 Cookie source URL, domain=" << domain
 +                        << ", path=" << path);
 +    return std::nullopt;
 +  }
@@ -434,7 +434,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +    const std::string* site = group.FindString("site");
 +    const std::string* cookie_text = group.FindString("cookie_text");
 +    if (!site || !cookie_text) {
-+      SIMPRINT_LOG(source << ": Cookie 分组缺少 site 或 cookie_text");
++      MZ_LOG(source << ": Cookie 分组缺少 site 或 cookie_text");
 +      continue;
 +    }
 +
@@ -491,7 +491,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +    return;
 +  }
 +
-+  SIMPRINT_LOG(state->source << ": Cookie 注入完成, success="
++  MZ_LOG(state->source << ": Cookie 注入完成, success="
 +                             << state->success_count
 +                             << ", failure=" << state->failure_count);
 +  if (!state->done.is_null()) {
@@ -519,7 +519,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +  auto importer = std::make_unique<password_manager::PasswordImporter>(
 +      *presenter, false);
 +
-+  SIMPRINT_LOG("LaunchConfig: 开始导入 " << passwords.size() << " 个密码");
++  MZ_LOG("LaunchConfig: 开始导入 " << passwords.size() << " 个密码");
 +  importer->Import(
 +      passwords, password_manager::PasswordForm::Store::kProfileStore,
 +      base::BindOnce(
@@ -527,9 +527,9 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +             std::unique_ptr<password_manager::PasswordImporter> importer,
 +             std::vector<GURL> urls,
 +             const password_manager::ImportResults& results) {
-+            SIMPRINT_LOG("LaunchConfig: 密码导入完成，状态="
++            MZ_LOG("LaunchConfig: 密码导入完成，状态="
 +                         << static_cast<int>(results.status));
-+            SIMPRINT_LOG("LaunchConfig: 导入数量=" << results.number_imported);
++            MZ_LOG("LaunchConfig: 导入数量=" << results.number_imported);
 +
 +            if (results.status ==
 +                password_manager::ImportResults::Status::SUCCESS) {
@@ -569,7 +569,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +  content::StoragePartition* storage_partition =
 +      profile->GetDefaultStoragePartition();
 +  if (!storage_partition) {
-+    SIMPRINT_LOG(source << ": StoragePartition 不可用");
++    MZ_LOG(source << ": StoragePartition 不可用");
 +    if (!done.is_null()) {
 +      std::move(done).Run();
 +    }
@@ -579,14 +579,14 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +  network::mojom::CookieManager* cookie_manager =
 +      storage_partition->GetCookieManagerForBrowserProcess();
 +  if (!cookie_manager) {
-+    SIMPRINT_LOG(source << ": CookieManager 不可用");
++    MZ_LOG(source << ": CookieManager 不可用");
 +    if (!done.is_null()) {
 +      std::move(done).Run();
 +    }
 +    return;
 +  }
 +
-+  SIMPRINT_LOG(source << ": 开始注入 " << cookies.size() << " 条 Cookie");
++  MZ_LOG(source << ": 开始注入 " << cookies.size() << " 条 Cookie");
 +  auto state =
 +      std::make_shared<CookieInjectionState>(cookies.size(), std::move(source),
 +                                             std::move(done));
@@ -599,7 +599,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +        std::nullopt, /*status=*/nullptr);
 +
 +    if (!canonical_cookie) {
-+      SIMPRINT_LOG(state->source << ": 无法创建 Cookie: " << cookie.name
++      MZ_LOG(state->source << ": 无法创建 Cookie: " << cookie.name
 +                                 << " @ " << cookie.domain);
 +      ++state->failure_count;
 +      CompleteCookieInjection(state);
@@ -618,7 +618,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +                ++state->success_count;
 +              } else {
 +                ++state->failure_count;
-+                SIMPRINT_LOG(state->source << ": Cookie 注入失败: "
++                MZ_LOG(state->source << ": Cookie 注入失败: "
 +                                           << cookie_name << " @ "
 +                                           << cookie_domain << ", status="
 +                                           << result.status.GetDebugString());
@@ -632,7 +632,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
  
  // static
 @@ -487,14 +1069,22 @@ void EventBus::HandleHandshakeResponse(const Message& message) {
-       SIMPRINT_LOG("  - " << key << ": " << val_str.str());
+       MZ_LOG("  - " << key << ": " << val_str.str());
      }
  
 +    std::vector<GURL> launch_urls =
@@ -640,7 +640,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +    std::vector<LaunchCookieEntry> launch_cookies =
 +        ParseLaunchCookies(config.FindList("cookies"), "LaunchConfig.cookies");
 +    if (!launch_cookies.empty()) {
-+      SIMPRINT_LOG("LaunchConfig: 发现 " << launch_cookies.size()
++      MZ_LOG("LaunchConfig: 发现 " << launch_cookies.size()
 +                                         << " 条待注入 Cookie");
 +    }
 +
@@ -649,7 +649,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 +    std::vector<GURL> account_urls;
      const base::ListValue* accounts = config.FindList("accounts");
      if (accounts && !accounts->empty()) {
-       SIMPRINT_LOG("LaunchConfig: 发现 " << accounts->size() << " 个账号，准备导入");
+       MZ_LOG("LaunchConfig: 发现 " << accounts->size() << " 个账号，准备导入");
  
 -      // 构造 CSVPassword 列表和 URL 列表
 -      std::vector<password_manager::CSVPassword> csv_passwords;
@@ -661,14 +661,14 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
  
          GURL gurl(*url);
          if (!gurl.is_valid()) {
--          SIMPRINT_LOG("LaunchConfig: 无效的 URL: " << *url);
-+          SIMPRINT_LOG("LaunchConfig.accounts: 无效的 URL: " << *url);
+-          MZ_LOG("LaunchConfig: 无效的 URL: " << *url);
++          MZ_LOG("LaunchConfig.accounts: 无效的 URL: " << *url);
            continue;
          }
  
 @@ -527,99 +1117,35 @@ void EventBus::HandleHandshakeResponse(const Message& message) {
  
-         SIMPRINT_LOG("LaunchConfig: 添加账号 " << *username << " @ " << *url);
+         MZ_LOG("LaunchConfig: 添加账号 " << *username << " @ " << *url);
        }
 +    }
  
@@ -681,13 +681,13 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 -                   std::vector<GURL> urls) {
 -                  ProfileManager* profile_manager = g_browser_process->profile_manager();
 -                  if (!profile_manager) {
--                    SIMPRINT_LOG("LaunchConfig: ProfileManager 不可用");
+-                    MZ_LOG("LaunchConfig: ProfileManager 不可用");
 -                    return;
 -                  }
 -
 -                  std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
 -                  if (profiles.empty()) {
--                    SIMPRINT_LOG("LaunchConfig: 没有加载的 Profile");
+-                    MZ_LOG("LaunchConfig: 没有加载的 Profile");
 -                    return;
 -                  }
 -
@@ -708,7 +708,7 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 -                  auto importer = std::make_unique<password_manager::PasswordImporter>(
 -                      *presenter, false);
 -
--                  SIMPRINT_LOG("LaunchConfig: 开始导入 " << passwords.size() << " 个密码");
+-                  MZ_LOG("LaunchConfig: 开始导入 " << passwords.size() << " 个密码");
 -
 -                  // 导入密码到 Profile Store
 -                  importer->Import(
@@ -719,9 +719,9 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 -                             std::unique_ptr<password_manager::PasswordImporter> importer,
 -                             std::vector<GURL> urls,
 -                             const password_manager::ImportResults& results) {
--                            SIMPRINT_LOG("LaunchConfig: 密码导入完成，状态="
+-                            MZ_LOG("LaunchConfig: 密码导入完成，状态="
 -                                << static_cast<int>(results.status));
--                            SIMPRINT_LOG("LaunchConfig: 导入数量=" << results.number_imported);
+-                            MZ_LOG("LaunchConfig: 导入数量=" << results.number_imported);
 -
 -                            // 打开账号对应的标签页
 -                            if (results.status == password_manager::ImportResults::Status::SUCCESS) {
@@ -740,13 +740,13 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
 -                                        content::WebContents* web_contents = tab_strip->GetWebContentsAt(i);
 -                                        if (web_contents && web_contents->GetURL() == url) {
 -                                          tab_exists = true;
--                                          SIMPRINT_LOG("LaunchConfig: 标签页已存在，跳过 " << url.spec());
+-                                          MZ_LOG("LaunchConfig: 标签页已存在，跳过 " << url.spec());
 -                                          break;
 -                                        }
 -                                      }
 -
 -                                      if (!tab_exists) {
--                                        SIMPRINT_LOG("LaunchConfig: 打开标签页 " << url.spec());
+-                                        MZ_LOG("LaunchConfig: 打开标签页 " << url.spec());
 -                                        chrome::AddTabAt(browser, url, -1, false);
 -                                      }
 -                                    }

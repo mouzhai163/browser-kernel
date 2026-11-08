@@ -6,7 +6,7 @@ index 5ec94dee53c53..5d5aa4e436ba6 100644
  
  #include "third_party/blink/renderer/core/dom/element.h"
  
-+#include "simprint/fingerprint/browser_fingerprint.h"
++#include "mz/fingerprint/browser_fingerprint.h"
 +
  #include <algorithm>
  #include <bitset>
@@ -23,7 +23,7 @@ index 5ec94dee53c53..5d5aa4e436ba6 100644
 +    float y = rect.y();
 +    float width = rect.width();
 +    float height = rect.height();
-+    simprint::fingerprint::BrowserFingerprint::ApplyClientRectsNoise(x, y, width, height);
++    mz::fingerprint::BrowserFingerprint::ApplyClientRectsNoise(x, y, width, height);
 +    rect.set_x(x);
 +    rect.set_y(y);
 +    rect.set_width(width);
@@ -44,7 +44,7 @@ index 5ec94dee53c53..5d5aa4e436ba6 100644
 +  float y = result.y();
 +  float width = result.width();
 +  float height = result.height();
-+  simprint::fingerprint::BrowserFingerprint::ApplyClientRectsNoise(x, y, width, height);
++  mz::fingerprint::BrowserFingerprint::ApplyClientRectsNoise(x, y, width, height);
 +  result.set_x(x);
 +  result.set_y(y);
 +  result.set_width(width);

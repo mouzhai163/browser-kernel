@@ -5,7 +5,7 @@ diff --git a/chrome/browser/ui/views/frame/BUILD.gn b/chrome/browser/ui/views/fr
        "//chrome/browser/lifetime",
        "//chrome/browser/profiles:profile_manager",
        "//chrome/browser/profiles:profile_util",
-+      "//chrome/browser/simprint",
++      "//chrome/browser/mz",
        "//chrome/browser/themes",
        "//chrome/browser/ui:ui_features",
        "//chrome/browser/ui/views/frame:browser_view_header",

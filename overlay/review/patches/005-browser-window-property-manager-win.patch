@@ -6,7 +6,7 @@ index 1a62480aee22c..aac334643d801 100644
    const Browser* browser = view_->browser();
    Profile* profile = browser->profile();
  
-+  LOG(INFO) << "[Simprint] UpdateWindowProperties called";
++  LOG(INFO) << "[MZ] UpdateWindowProperties called";
 +
    // Set the app user model id for this application to that of the application
    // name. See http://crbug.com/7028.
@@ -16,7 +16,7 @@ index 1a62480aee22c..aac334643d801 100644
            : shell_integration::win::GetAppUserModelIdForBrowser(
                  profile->GetPath());
 +
-+  LOG(INFO) << "[Simprint] App ID: " << app_id;
++  LOG(INFO) << "[MZ] App ID: " << app_id;
    // Apps set their relaunch details based on app's details.
    if (browser->is_type_app() || browser->is_type_app_popup()) {
      ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
@@ -24,10 +24,10 @@ index 1a62480aee22c..aac334643d801 100644
                                              &pinned_name, &icon_path);
      command_line_string = command_line.GetCommandLineString();
    }
-+  LOG(INFO) << "[Simprint] Calling SetAppDetailsForWindow with app_id: " << app_id;
++  LOG(INFO) << "[MZ] Calling SetAppDetailsForWindow with app_id: " << app_id;
    ui::win::SetAppDetailsForWindow(app_id, icon_path, 0, command_line_string,
                                    pinned_name, hwnd_);
-+  LOG(INFO) << "[Simprint] SetAppDetailsForWindow completed";
++  LOG(INFO) << "[MZ] SetAppDetailsForWindow completed";
  }
  
  // static

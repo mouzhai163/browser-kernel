@@ -6,7 +6,7 @@ index 922c787b9bd87..b6a1a924f2389 100644
  #include "ui/gfx/geometry/size_conversions.h"
  #include "ui/gfx/geometry/skia_conversions.h"
  #include "v8/include/v8.h"
-+#include "simprint/fingerprint/browser_fingerprint.h"
++#include "mz/fingerprint/browser_fingerprint.h"
  
  namespace blink {
  
@@ -14,12 +14,12 @@ index 922c787b9bd87..b6a1a924f2389 100644
  
    scoped_refptr<StaticBitmapImage> image_bitmap = Snapshot(source_buffer);
    if (image_bitmap) {
-+    // Simprint: 应用 Canvas 指纹噪声
++    // MZ: 应用 Canvas 指纹噪声
 +    // 需要创建一个可修改的副本
 +    SkBitmap bitmap;
 +    if (image_bitmap->PaintImageForCurrentFrame().GetSwSkImage()->asLegacyBitmap(&bitmap)) {
 +      if (bitmap.getPixels()) {
-+        simprint::fingerprint::BrowserFingerprint::ApplyCanvasNoise(
++        mz::fingerprint::BrowserFingerprint::ApplyCanvasNoise(
 +            static_cast<unsigned char*>(bitmap.getPixels()),
 +            bitmap.computeByteSize());
 +        // 从修改后的 bitmap 创建新的 StaticBitmapImage

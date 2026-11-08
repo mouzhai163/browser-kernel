@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "overlay/fingerprint/sources/simprint/fingerprint_browser_fingerprint.cc"
+SOURCE = ROOT / "overlay/fingerprint/sources/mz/fingerprint_browser_fingerprint.cc"
 
 
 def _find_compiler() -> tuple[str, str] | None:
@@ -53,11 +53,11 @@ class CanvasNoiseTests(unittest.TestCase):
 #include <vector>
 #define UNSAFE_BUFFERS(...) __VA_ARGS__
 namespace base { template <typename T> using span = std::span<T>; }
-namespace simprint::config {
+namespace mz::config {
 std::string mode = "random";
 std::string GetCanvasMode() { return mode; }
 }
-namespace simprint::fingerprint {
+namespace mz::fingerprint {
 class BrowserFingerprint {
  public:
   static void ApplyCanvasNoise(unsigned char*, size_t);
@@ -66,7 +66,7 @@ class BrowserFingerprint {
 FUNCTION
 }
 int main() {
-  using simprint::fingerprint::BrowserFingerprint;
+  using mz::fingerprint::BrowserFingerprint;
   BrowserFingerprint::ApplyCanvasNoise(nullptr, 0);
   BrowserFingerprint::ApplyCanvasNoise(nullptr, 48);
   std::array<unsigned char, 3> incomplete = {1, 2, 3};
@@ -88,15 +88,15 @@ int main() {
     assert(image == repeated);
     for (size_t i = 0; i < pixels; ++i) assert(image[i * 4 + 3] == 255);
     if (pixels < 10) assert(image == original);
-    simprint::config::mode = "real";
+    mz::config::mode = "real";
     auto real = original;
     BrowserFingerprint::ApplyCanvasNoise(real.data(), real.size());
     assert(real == original);
-    simprint::config::mode = "random";
+    mz::config::mode = "random";
   }
 }
 """.replace("FUNCTION", match.group(0))
-        with tempfile.TemporaryDirectory(prefix="simprint-canvas-") as directory:
+        with tempfile.TemporaryDirectory(prefix="mz-canvas-") as directory:
             directory = Path(directory)
             source = directory / "canvas_test.cc"
             executable = directory / ("canvas_test.exe" if _COMPILER[0] == "msvc" else "canvas_test")

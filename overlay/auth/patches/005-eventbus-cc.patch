@@ -1,7 +1,7 @@
-diff --git a/simprint/eventbus/eventbus.cc b/simprint/eventbus/eventbus.cc
+diff --git a/mz/eventbus/eventbus.cc b/mz/eventbus/eventbus.cc
 index 63ecf9ae49d19..e174d8870bc86 100644
---- a/simprint/eventbus/eventbus.cc
-+++ b/simprint/eventbus/eventbus.cc
+--- a/mz/eventbus/eventbus.cc
++++ b/mz/eventbus/eventbus.cc
 @@ -8,9 +8,11 @@
  #include <cstdint>
  #include <sstream>

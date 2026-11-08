@@ -7,7 +7,7 @@ diff --git a/content/renderer/render_thread_impl.h b/content/renderer/render_thr
        blink::mojom::PerformanceTier cpu_performance_tier,
 -      uint64_t trace_id) override;
 +      uint64_t trace_id,
-+      const std::string& simprint_fingerprint_config) override;
++      const std::string& mz_fingerprint_config) override;
  #if BUILDFLAG(IS_MAC)
    void UpdateScrollbarTheme(
        mojom::UpdateScrollbarThemeParamsPtr params) override;

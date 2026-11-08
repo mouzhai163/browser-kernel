@@ -6,7 +6,7 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
  
  #include "components/embedder_support/user_agent_utils.h"
 +
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/config/fingerprint_config_storage.h"
  
  #include <stdint.h>
  
@@ -15,7 +15,7 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
    DCHECK(parse_result);
    std::optional<std::string> brand;
 -#if !BUILDFLAG(CHROMIUM_BRANDING)
-+#if BUILDFLAG(SIMPRINT_BRANDING)
++#if BUILDFLAG(MZ_BRANDING)
 +  // 与 Google Chrome 构建一致：[GREASE, Chromium, Google Chrome]（UA 字符串本身也声明是 Chrome）。
 +  brand = "Google Chrome";
 +#elif !BUILDFLAG(CHROMIUM_BRANDING)
@@ -27,10 +27,10 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
  const blink::UserAgentBrandList GetUserAgentBrandMajorVersionListInternal(
      std::optional<blink::UserAgentBrandVersion> additional_brand_version) {
 +  // 如果配置了自定义 User-Agent，使用其中的版本号
-+  std::string configured_ua = simprint::config::GetUserAgent();
++  std::string configured_ua = mz::config::GetUserAgent();
 +  if (!configured_ua.empty()) {
-+    int major_version = simprint::config::GetChromeMajorVersionFromUserAgent();
-+    std::string full_version = simprint::config::GetChromeVersionFromUserAgent();
++    int major_version = mz::config::GetChromeMajorVersionFromUserAgent();
++    std::string full_version = mz::config::GetChromeVersionFromUserAgent();
 +    if (major_version > 0 && !full_version.empty()) {
 +      return GetUserAgentBrandList(base::NumberToString(major_version), full_version,
 +                                   blink::UserAgentBrandVersionType::kMajorVersion,
@@ -45,8 +45,8 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
  // GetVersionNumber()
  const blink::UserAgentBrandList GetUserAgentBrandFullVersionListInternal(
      std::optional<blink::UserAgentBrandVersion> additional_brand_version) {
-+  // Simprint: 如果配置了自定义 User-Agent，使用原始完整版本号
-+  std::string configured_ua = simprint::config::GetUserAgent();
++  // MZ: 如果配置了自定义 User-Agent，使用原始完整版本号
++  std::string configured_ua = mz::config::GetUserAgent();
 +  if (!configured_ua.empty()) {
 +    // 优先使用保存的原始完整版本号（而非从简化后的 UA 提取）
 +    // 完整版本一律使用内核的真实版本：配置里的版本号与真实内核对不上（构建号不存在或更低），
@@ -66,8 +66,8 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
 +    }
 +
 +    // 如果没有原始版本，回退到从 UA 提取（简化版本）
-+    int major_version = simprint::config::GetChromeMajorVersionFromUserAgent();
-+    std::string full_version = simprint::config::GetChromeVersionFromUserAgent();
++    int major_version = mz::config::GetChromeMajorVersionFromUserAgent();
++    std::string full_version = mz::config::GetChromeVersionFromUserAgent();
 +    if (major_version > 0 && !full_version.empty()) {
 +      return GetUserAgentBrandList(base::NumberToString(major_version), full_version,
 +                                   blink::UserAgentBrandVersionType::kFullVersion,
@@ -83,7 +83,7 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
  
  std::string GetUserAgent() {
 +  // 优先使用配置的 User-Agent
-+  std::string configured_ua = simprint::config::GetUserAgent();
++  std::string configured_ua = mz::config::GetUserAgent();
 +  if (!configured_ua.empty()) {
 +    return configured_ua;
 +  }
@@ -95,9 +95,9 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
    metadata.mobile = GetMobileBitForUAMetadata();
    metadata.platform = GetPlatformForUAMetadata();
  
-+  // Simprint: 配置的平台（Sec-CH-UA-Platform 与 navigator.userAgentData 共用）
++  // MZ: 配置的平台（Sec-CH-UA-Platform 与 navigator.userAgentData 共用）
 +  {
-+    std::string configured_platform = simprint::config::GetPlatform();
++    std::string configured_platform = mz::config::GetPlatform();
 +    if (!configured_platform.empty()) {
 +      metadata.platform = configured_platform;
 +    }
@@ -112,9 +112,9 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
        GetUserAgentBrandFullVersionListInternal(std::nullopt);
 -  metadata.full_version = std::string(version_info::GetVersionNumber());
 +
-+  // Simprint: 如果配置了自定义 User-Agent，使用原始完整版本号（而非简化版本）
++  // MZ: 如果配置了自定义 User-Agent，使用原始完整版本号（而非简化版本）
 +  // 这样可以实现：JavaScript UA 显示 144.0.0.0，Client Hints 显示 144.0.6477.96
-+  std::string configured_ua = simprint::config::GetUserAgent();
++  std::string configured_ua = mz::config::GetUserAgent();
 +  if (!configured_ua.empty()) {
 +    // 优先使用保存的原始完整版本号
 +    // 完整版本一律使用内核的真实版本：配置里的版本号与真实内核对不上（构建号不存在或更低），
@@ -125,7 +125,7 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
 +      metadata.full_version = original_version;
 +    } else {
 +      // 如果没有原始版本，尝试从 UA 提取
-+      std::string full_version = simprint::config::GetChromeVersionFromUserAgent();
++      std::string full_version = mz::config::GetChromeVersionFromUserAgent();
 +      if (!full_version.empty()) {
 +        metadata.full_version = full_version;
 +      } else {
@@ -143,11 +143,11 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
  }
  
  std::string BuildModelInfo() {
-+  // Simprint: 检查设备名称配置
-+  std::string configured_device_name = simprint::config::GetDeviceName();
++  // MZ: 检查设备名称配置
++  std::string configured_device_name = mz::config::GetDeviceName();
 +  // UA-CH `model` 只在移动端有意义；桌面 Windows/macOS/Linux 必须为空。
 +  if (!configured_device_name.empty() &&
-+      simprint::config::GetPlatform() == "Android") {
++      mz::config::GetPlatform() == "Android") {
 +    return configured_device_name;
 +  }
 +

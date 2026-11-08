@@ -5,8 +5,8 @@ diff --git a/third_party/blink/renderer/core/frame/local_dom_window.cc b/third_p
  #include "third_party/blink/renderer/core/scroll/scroll_promise_resolver.h"
  #include "third_party/blink/renderer/core/scroll/scroll_types.h"
  #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
-+#include "simprint/fingerprint/screen_hardware_fingerprint.h"
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/fingerprint/screen_hardware_fingerprint.h"
++#include "mz/config/fingerprint_config_storage.h"
 +#include "third_party/blink/renderer/core/inspector/locale_controller.h"
 +#include "third_party/blink/renderer/core/timezone/timezone_controller.h"
  #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -18,7 +18,7 @@ diff --git a/third_party/blink/renderer/core/frame/local_dom_window.cc b/third_p
  
 +namespace {
 +
-+// Simprint: make JS Date / Intl use the configured timezone instead of the OS one.
++// MZ: make JS Date / Intl use the configured timezone instead of the OS one.
 +// Uses Blink's own override mechanism (the one behind DevTools'
 +// Emulation.setTimezoneOverride): it updates ICU, notifies V8 and all workers, and
 +// survives host timezone change events. Runs once per renderer process, on the
@@ -28,7 +28,7 @@ diff --git a/third_party/blink/renderer/core/frame/local_dom_window.cc b/third_p
 +  if (done) {
 +    return;
 +  }
-+  const std::string timezone = simprint::config::GetTimezone();
++  const std::string timezone = mz::config::GetTimezone();
 +  if (timezone.empty()) {
 +    return;
 +  }
@@ -42,7 +42,7 @@ diff --git a/third_party/blink/renderer/core/frame/local_dom_window.cc b/third_p
 +  }
 +}
 +
-+// Simprint: make Intl / toLocaleString follow the configured language instead of the
++// MZ: make Intl / toLocaleString follow the configured language instead of the
 +// OS locale. base::i18n::SetICUDefaultLocale() alone is not enough: V8 caches its
 +// default locale per isolate. LocaleController (DevTools' Emulation.setLocaleOverride
 +// mechanism) updates ICU, resets the cache in every main-thread isolate and all workers.
@@ -51,7 +51,7 @@ diff --git a/third_party/blink/renderer/core/frame/local_dom_window.cc b/third_p
 +  if (done) {
 +    return;
 +  }
-+  const std::string language = simprint::config::GetLanguage();
++  const std::string language = mz::config::GetLanguage();
 +  if (language.empty()) {
 +    return;
 +  }
@@ -81,8 +81,8 @@ diff --git a/third_party/blink/renderer/core/frame/local_dom_window.cc b/third_p
  }
  
  double LocalDOMWindow::devicePixelRatio() const {
-+  // Simprint: 检查是否有指纹配置
-+  double configured = simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredDevicePixelRatio();
++  // MZ: 检查是否有指纹配置
++  double configured = mz::fingerprint::ScreenHardwareFingerprint::GetConfiguredDevicePixelRatio();
 +  if (configured > 0.0) {
 +    return configured;
 +  }

@@ -1,4 +1,4 @@
-# Simprint Review Overlay - Patch Application Order
+# MZ Review Overlay - Patch Application Order
 # Review WebUI 页面与窗口增强功能
 # 基于 git diff bcffd0ea6d377^..bb84996b42a5b
 
@@ -18,11 +18,11 @@
 010-chrome-webui-url-constants-cc.patch
 011-chrome-webui-url-constants-h.patch
 
-# Simprint
-012-simprint-eventbus.patch
-013-simprint-fingerprint-build-gn.patch
-014-simprint-fingerprint-config-cc.patch
-015-simprint-fingerprint-config-h.patch
+# MZ
+012-mz-eventbus.patch
+013-mz-fingerprint-build-gn.patch
+014-mz-fingerprint-config-cc.patch
+015-mz-fingerprint-config-h.patch
 
 # Tools
 016-resource-ids-spec.patch

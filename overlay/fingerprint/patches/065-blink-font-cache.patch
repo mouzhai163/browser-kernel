@@ -7,8 +7,8 @@ index a674a149623df..2f6c81677a3cf 100644
  #include "third_party/blink/renderer/platform/fonts/font_cache_client.h"
  #include "third_party/blink/renderer/platform/fonts/font_data_cache.h"
 +
-+// Simprint
-+#include "simprint/config/fingerprint_config_storage.h"
++// MZ
++#include "mz/config/fingerprint_config_storage.h"
 +#include "base/logging.h"
 +#include <algorithm>
  #include "third_party/blink/renderer/platform/fonts/font_description.h"
@@ -18,7 +18,7 @@ index a674a149623df..2f6c81677a3cf 100644
      const FontDescription& font_description,
      const AtomicString& family,
      AlternateFontName altername_font_name) {
-+  // Simprint: 系统字体白名单。网页字体（@font-face）不经过这里，不受影响。
++  // MZ: 系统字体白名单。网页字体（@font-face）不经过这里，不受影响。
 +  bool is_generic = family == font_family_names::kSerif ||
 +                    family == font_family_names::kSansSerif ||
 +                    family == font_family_names::kMonospace ||
@@ -26,7 +26,7 @@ index a674a149623df..2f6c81677a3cf 100644
 +                    family == font_family_names::kFantasy ||
 +                    family == font_family_names::kSystemUi ||
 +                    family.empty();
-+  if (!is_generic && !simprint::config::IsSystemFontAllowed(family.Utf8())) {
++  if (!is_generic && !mz::config::IsSystemFontAllowed(family.Utf8())) {
 +    return nullptr;
 +  }
 +

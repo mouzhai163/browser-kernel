@@ -16,8 +16,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "simprint/eventbus/eventbus.h"
-#include "simprint/eventbus/topics.h"
+#include "mz/eventbus/eventbus.h"
+#include "mz/eventbus/topics.h"
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -31,11 +31,11 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-// Simprint: 全局回调指针声明（在全局命名空间中）
+// MZ: 全局回调指针声明（在全局命名空间中）
 using SyncTextCommitCallback = void (*)(uint8_t, const std::u16string&);
 extern SyncTextCommitCallback g_sync_text_commit_callback;
 
-// Simprint: 获取 Widget 的 root_index 函数指针（在 content/ 和 ui/ 层使用）
+// MZ: 获取 Widget 的 root_index 函数指针（在 content/ 和 ui/ 层使用）
 using GetRootIndexForWidgetFunc = uint8_t (*)(void*);
 GetRootIndexForWidgetFunc g_get_root_index_for_widget_func = nullptr;
 
@@ -90,8 +90,8 @@ void SendSyncMouseEvent(uint8_t ev_type, uint8_t root_index, float norm_x,
   if (ev_type == kTypeDown || ev_type == kTypeUp) {
     payload.push_back(static_cast<uint8_t>(std::clamp(click_count, 1, 3)));
   }
-  simprint::eventbus::EventBus::GetInstance().SendEvent(
-      simprint::eventbus::Topic::kSyncInputEvent, std::move(payload));
+  mz::eventbus::EventBus::GetInstance().SendEvent(
+      mz::eventbus::Topic::kSyncInputEvent, std::move(payload));
 }
 
 void SendSyncWheelEvent(uint8_t root_index, float norm_x, float norm_y,
@@ -104,8 +104,8 @@ void SendSyncWheelEvent(uint8_t root_index, float norm_x, float norm_y,
   WriteFloatToPayload(payload, norm_y);
   WriteFloatToPayload(payload, delta_x);
   WriteFloatToPayload(payload, delta_y);
-  simprint::eventbus::EventBus::GetInstance().SendEvent(
-      simprint::eventbus::Topic::kSyncInputEvent, std::move(payload));
+  mz::eventbus::EventBus::GetInstance().SendEvent(
+      mz::eventbus::Topic::kSyncInputEvent, std::move(payload));
 }
 
 void WriteU16ToPayload(std::vector<uint8_t>& payload, uint16_t value) {
@@ -127,13 +127,13 @@ void SendSyncKeyEvent(uint8_t ev_type, uint8_t root_index,
   payload.push_back(root_index);
   WriteU16ToPayload(payload, static_cast<uint16_t>(key_code));
   WriteU32ToPayload(payload, static_cast<uint32_t>(flags));
-  simprint::eventbus::EventBus::GetInstance().SendEvent(
-      simprint::eventbus::Topic::kSyncInputEvent, std::move(payload));
+  mz::eventbus::EventBus::GetInstance().SendEvent(
+      mz::eventbus::Topic::kSyncInputEvent, std::move(payload));
 }
 
 [[maybe_unused]] void SendSyncTextCommit(uint8_t root_index, const std::u16string& text) {
   if (text.empty()) return;
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() != 1) {
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() != 1) {
     return;  // 只有主控才发送
   }
   std::string utf8 = base::UTF16ToUTF8(text);
@@ -142,8 +142,8 @@ void SendSyncKeyEvent(uint8_t ev_type, uint8_t root_index,
   payload.push_back(kTypeTextCommit);
   payload.push_back(root_index);
   payload.insert(payload.end(), utf8.begin(), utf8.end());
-  simprint::eventbus::EventBus::GetInstance().SendEvent(
-      simprint::eventbus::Topic::kSyncInputEvent, std::move(payload));
+  mz::eventbus::EventBus::GetInstance().SendEvent(
+      mz::eventbus::Topic::kSyncInputEvent, std::move(payload));
 }
 
 // 初始化全局回调指针
@@ -171,8 +171,8 @@ void SendSyncPaste() {
         if (text.empty()) return;
         std::string utf8 = base::UTF16ToUTF8(text);
         std::vector<uint8_t> payload(utf8.begin(), utf8.end());
-        simprint::eventbus::EventBus::GetInstance().SendEvent(
-            simprint::eventbus::Topic::kSyncPaste, std::move(payload));
+        mz::eventbus::EventBus::GetInstance().SendEvent(
+            mz::eventbus::Topic::kSyncPaste, std::move(payload));
       }));
 }
 
@@ -268,7 +268,7 @@ bool GetNormalizedPositionFromEvent(views::View* root_view,
 }  // namespace
 
 void SyncInputCaptureHandler::SendSyncPasteIfMain() {
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() != 1) {
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() != 1) {
     return;
   }
   SendSyncPaste();
@@ -340,13 +340,13 @@ void SyncInputCaptureHandler::OnKeyEvent(ui::KeyEvent* event) {
                          (flags & ui::EF_CONTROL_DOWN);
   if (is_ctrl_v) {
     // 网页渲染区、地址栏等处的 Ctrl+V 可能不经过 CutCopyPaste，需在此发送 SyncPaste。
-    if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 1 &&
+    if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 1 &&
         event->type() == ui::EventType::kKeyPressed) {
       SendSyncPaste();
     }
     return;  // 不发送 KeyDown/KeyUp
   }
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() != 1) {
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() != 1) {
     return;
   }
   size_t root_index = 0;
@@ -364,7 +364,7 @@ void SyncInputCaptureHandler::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void SyncInputCaptureHandler::OnMouseEvent(ui::MouseEvent* event) {
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() != 1) {
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() != 1) {
     return;
   }
   views::View* root_view = root_view_.get();
@@ -403,7 +403,7 @@ void SyncInputCaptureHandler::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void SyncInputCaptureHandler::OnScrollEvent(ui::ScrollEvent* event) {
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() != 1) {
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() != 1) {
     return;
   }
   views::View* root_view = root_view_.get();
@@ -451,8 +451,8 @@ uint8_t GetRootIndexForWidget(views::Widget* widget) {
     return 0;
   }
 
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-    simprint::LogToConsole(base::StringPrintf(
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+    mz::LogToConsole(base::StringPrintf(
         "[GetRootIndexForWidget] widget=%p, root=%p", widget, root));
   }
 
@@ -468,8 +468,8 @@ uint8_t GetRootIndexForWidget(views::Widget* widget) {
 
   // 查找弹出层的 root_index
   std::vector<views::View*> root_views = browser_view->GetSyncReplayRootViews();
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-    simprint::LogToConsole(base::StringPrintf(
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+    mz::LogToConsole(base::StringPrintf(
         "[GetRootIndexForWidget] checking %zu root_views", root_views.size()));
   }
 
@@ -480,13 +480,13 @@ uint8_t GetRootIndexForWidget(views::Widget* widget) {
           static_cast<aura::Window*>(root_view->GetWidget()->GetNativeView());
       if (popup_content) {
         aura::Window* popup_root = popup_content->GetRootWindow();
-        if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-          simprint::LogToConsole(base::StringPrintf(
+        if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+          mz::LogToConsole(base::StringPrintf(
               "[GetRootIndexForWidget] root_views[%zu]: popup_root=%p", i, popup_root));
         }
         if (popup_root == root) {
-          if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-            simprint::LogToConsole(base::StringPrintf(
+          if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+            mz::LogToConsole(base::StringPrintf(
                 "[GetRootIndexForWidget] matched popup at index %zu", i));
           }
           return static_cast<uint8_t>(i);
@@ -513,22 +513,22 @@ uint8_t GetRootIndexForWidgetPtr(void* ptr) {
   // 先尝试通过 Widget 查找（适用于 Views 控件）
   views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
   if (widget) {
-    if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-      simprint::LogToConsole(base::StringPrintf(
+    if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+      mz::LogToConsole(base::StringPrintf(
           "[GetRootIndexForWidgetPtr] window=%p, widget=%p (found via GetWidgetForNativeView)",
           window, widget));
     }
     uint8_t root_index = GetRootIndexForWidget(widget);
-    if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-      simprint::LogToConsole(base::StringPrintf(
+    if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+      mz::LogToConsole(base::StringPrintf(
           "[GetRootIndexForWidgetPtr] root_index=%d", (int)root_index));
     }
     return root_index;
   }
 
   // Widget 为空，说明是 WebUI 的子窗口，通过 root window 匹配
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-    simprint::LogToConsole(base::StringPrintf(
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+    mz::LogToConsole(base::StringPrintf(
         "[GetRootIndexForWidgetPtr] window=%p, widget=(nil), trying root window match",
         window));
   }
@@ -538,8 +538,8 @@ uint8_t GetRootIndexForWidgetPtr(void* ptr) {
     return 0;
   }
 
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-    simprint::LogToConsole(base::StringPrintf(
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+    mz::LogToConsole(base::StringPrintf(
         "[GetRootIndexForWidgetPtr] root=%p", root));
   }
 
@@ -565,8 +565,8 @@ uint8_t GetRootIndexForWidgetPtr(void* ptr) {
 
   // 查找弹出层的 root_index
   std::vector<views::View*> root_views = browser_view->GetSyncReplayRootViews();
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-    simprint::LogToConsole(base::StringPrintf(
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+    mz::LogToConsole(base::StringPrintf(
         "[GetRootIndexForWidgetPtr] checking %zu root_views", root_views.size()));
   }
 
@@ -577,13 +577,13 @@ uint8_t GetRootIndexForWidgetPtr(void* ptr) {
           static_cast<aura::Window*>(root_view->GetWidget()->GetNativeView());
       if (popup_content) {
         aura::Window* popup_root = popup_content->GetRootWindow();
-        if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-          simprint::LogToConsole(base::StringPrintf(
+        if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+          mz::LogToConsole(base::StringPrintf(
               "[GetRootIndexForWidgetPtr] root_views[%zu]: popup_root=%p", i, popup_root));
         }
         if (popup_root == root) {
-          if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-            simprint::LogToConsole(base::StringPrintf(
+          if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+            mz::LogToConsole(base::StringPrintf(
                 "[GetRootIndexForWidgetPtr] matched popup at index %zu", i));
           }
           return static_cast<uint8_t>(i);

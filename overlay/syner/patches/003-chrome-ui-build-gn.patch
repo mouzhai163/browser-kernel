@@ -5,7 +5,7 @@ diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
      "//chrome/browser/search_provider_logos",
      "//chrome/browser/segmentation_platform",
      "//chrome/browser/sessions",
-+    "//simprint/eventbus",
++    "//mz/eventbus",
      "//chrome/browser/sessions:impl",
      "//chrome/browser/signin",
      "//chrome/browser/signin:impl",

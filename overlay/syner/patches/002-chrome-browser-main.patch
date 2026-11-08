@@ -7,7 +7,7 @@ index d347c428acc41..9011d873638c3 100644
  #include "ui/gl/gl_switches.h"
  
 +#if BUILDFLAG(IS_WIN)
-+#include "simprint/eventbus/eventbus.h"
++#include "mz/eventbus/eventbus.h"
 +#endif
 +
  // Per-platform #include blocks, in alphabetical order.
@@ -18,14 +18,14 @@ index d347c428acc41..9011d873638c3 100644
    browser_process_->browser_policy_connector()->OnBrowserStarted();
  
 +#if BUILDFLAG(IS_WIN)
-+  // Initialize Simprint EventBus if env_id is provided
++  // Initialize MZ EventBus if env_id is provided
 +  {
 +    const base::CommandLine* command_line =
 +        base::CommandLine::ForCurrentProcess();
-+    if (command_line->HasSwitch("simprint-env-id")) {
++    if (command_line->HasSwitch("mz-env-id")) {
 +      std::string env_id =
-+          command_line->GetSwitchValueASCII("simprint-env-id");
-+      simprint::eventbus::EventBus::GetInstance().Initialize(env_id);
++          command_line->GetSwitchValueASCII("mz-env-id");
++      mz::eventbus::EventBus::GetInstance().Initialize(env_id);
 +    }
 +  }
 +#endif
@@ -44,8 +44,8 @@ index d347c428acc41..9011d873638c3 100644
    NOTREACHED();
  #else
 +#if BUILDFLAG(IS_WIN)
-+  // Shutdown Simprint EventBus
-+  simprint::eventbus::EventBus::GetInstance().Shutdown();
++  // Shutdown MZ EventBus
++  mz::eventbus::EventBus::GetInstance().Shutdown();
 +#endif
 +
    // Shutdown the UpgradeDetector here before `ChromeBrowserMainPartsAsh`

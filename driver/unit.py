@@ -29,12 +29,12 @@ def _read_driver_config(kernel_root: Path, key: str) -> str | None:
 
 
 def _chromium_src(kernel_root: Path) -> Path:
-    source = os.environ.get("SIMPRINT_CHROMIUM_ROOT") or _read_driver_config(
-        kernel_root, "SIMPRINT_CHROMIUM_ROOT"
+    source = os.environ.get("MZ_CHROMIUM_ROOT") or _read_driver_config(
+        kernel_root, "MZ_CHROMIUM_ROOT"
     )
     if not source:
         raise SystemExit(
-            "Chromium root not set. Set SIMPRINT_CHROMIUM_ROOT or edit "
+            "Chromium root not set. Set MZ_CHROMIUM_ROOT or edit "
             "driver/driver.config"
         )
     path = Path(source).resolve()
@@ -61,7 +61,7 @@ def _run_deploy_script(
     if not script.is_file():
         return
     spec = importlib.util.spec_from_file_location(
-        f"simprint_deploy_{project_root.name}", script
+        f"mz_deploy_{project_root.name}", script
     )
     if spec is None or spec.loader is None:
         raise SystemExit(f"Cannot load deploy script: {script}")
@@ -91,7 +91,7 @@ def run_standard_unit(project_root: Path, phase: str) -> None:
                 )
 
     def deploy() -> None:
-        configured_root = os.environ.get("SIMPRINT_KERNEL_ROOT")
+        configured_root = os.environ.get("MZ_KERNEL_ROOT")
         active_kernel_root = (
             Path(configured_root).resolve() if configured_root else kernel_root
         )

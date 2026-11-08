@@ -11,15 +11,15 @@ diff --git a/chrome/browser/ui/views/frame/sync_input_replay.cc b/chrome/browser
                     ui::KeyboardCode key_code,
                     int flags,
                     size_t root_index) {
--  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
--    simprint::LogToConsole(base::StringPrintf(
+-  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+-    mz::LogToConsole(base::StringPrintf(
 -        "[SyncReplay] KeyDown key_code=%d flags=0x%x root_index=%zu", key_code,
 -        flags, root_index));
 -  }
    views::Widget* widget = root_view ? root_view->GetWidget() : nullptr;
    if (!widget) {
--    if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
--      simprint::LogToConsole("[SyncReplay] KeyDown: widget is null");
+-    if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+-      mz::LogToConsole("[SyncReplay] KeyDown: widget is null");
 -    }
      return;
    }
@@ -28,8 +28,8 @@ diff --git a/chrome/browser/ui/views/frame/sync_input_replay.cc b/chrome/browser
        }
      }
    }
--  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
--    simprint::LogToConsole(base::StringPrintf(
+-  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+-    mz::LogToConsole(base::StringPrintf(
 -        "[SyncReplay] KeyDown done, accelerator_handled=%d, handled=%d",
 -        accelerator_handled, event.handled()));
 -  }
@@ -39,15 +39,15 @@ diff --git a/chrome/browser/ui/views/frame/sync_input_replay.cc b/chrome/browser
                   ui::KeyboardCode key_code,
                   int flags,
                   size_t root_index) {
--  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
--    simprint::LogToConsole(base::StringPrintf(
+-  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+-    mz::LogToConsole(base::StringPrintf(
 -        "[SyncReplay] KeyUp key_code=%d flags=0x%x root_index=%zu", key_code,
 -        flags, root_index));
 -  }
    views::Widget* widget = root_view ? root_view->GetWidget() : nullptr;
    if (!widget) {
-     if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
--      simprint::LogToConsole("[SyncReplay] KeyUp: widget is null");
+     if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+-      mz::LogToConsole("[SyncReplay] KeyUp: widget is null");
      }
      return;
    }
@@ -66,8 +66,8 @@ diff --git a/chrome/browser/ui/views/frame/sync_input_replay.cc b/chrome/browser
  #endif
        static_cast<ui::EventSource*>(widget)->SendEventToSink(&event);
    }
--  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
--    simprint::LogToConsole(base::StringPrintf(
+-  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+-    mz::LogToConsole(base::StringPrintf(
 -        "[SyncReplay] KeyUp done, accelerator_handled=%d, handled=%d",
 -        accelerator_handled, event.handled()));
 -  }
@@ -78,8 +78,8 @@ diff --git a/chrome/browser/ui/views/frame/sync_input_replay.cc b/chrome/browser
      views::View* root_view = nullptr;
      size_t root_index = 0;
      if (!GetRootViewForKeyEvent(data, &root_view, &root_index)) {
--      if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
--        simprint::LogToConsole(
+-      if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+-        mz::LogToConsole(
 -            "[SyncReplay] Key: GetRootViewForKeyEvent failed (no browser?)");
 -      }
        return;
@@ -89,7 +89,7 @@ diff --git a/chrome/browser/ui/views/frame/sync_input_replay.cc b/chrome/browser
    // 处理 IME 文本提交事件
    if (ev_type == kTypeTextCommit) {
      if (data.size() < 2) {
--      if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+-      if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
 -      }
        return;
      }
@@ -98,8 +98,8 @@ diff --git a/chrome/browser/ui/views/frame/sync_input_replay.cc b/chrome/browser
  
      // 根据 root_index 获取对应的 root_view 和 Widget
      std::vector<views::View*> root_views = browser_view->GetSyncReplayRootViews();
--    if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
--      simprint::LogToConsole(base::StringPrintf(
+-    if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+-      mz::LogToConsole(base::StringPrintf(
 -          "[SyncReplay] TextCommit: root_index=%d, root_views.size()=%zu",
 -          (int)root_index, root_views.size()));
 -    }
@@ -109,8 +109,8 @@ diff --git a/chrome/browser/ui/views/frame/sync_input_replay.cc b/chrome/browser
      }
      size_t idx = static_cast<size_t>(root_index);
      if (idx >= root_views.size()) {
--      if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
--        simprint::LogToConsole(base::StringPrintf(
+-      if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+-        mz::LogToConsole(base::StringPrintf(
 -            "[SyncReplay] TextCommit: idx %zu >= root_views.size() %zu, using 0",
 -            idx, root_views.size()));
 -      }
@@ -121,8 +121,8 @@ diff --git a/chrome/browser/ui/views/frame/sync_input_replay.cc b/chrome/browser
        return;
      }
  
--    if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
--      simprint::LogToConsole(base::StringPrintf(
+-    if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+-      mz::LogToConsole(base::StringPrintf(
 -          "[SyncReplay] TextCommit: widget=%p", widget));
 -    }
 -
@@ -130,8 +130,8 @@ diff --git a/chrome/browser/ui/views/frame/sync_input_replay.cc b/chrome/browser
      if (input_method) {
        ui::TextInputClient* client = input_method->GetTextInputClient();
        if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
--        if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
--          simprint::LogToConsole(base::StringPrintf(
+-        if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+-          mz::LogToConsole(base::StringPrintf(
 -              "[SyncReplay] TextCommit: inserting text to client=%p", client));
 -        }
          // 直接插入文本

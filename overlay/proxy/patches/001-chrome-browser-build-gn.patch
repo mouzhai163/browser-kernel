@@ -5,7 +5,7 @@ diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
      "//services/preferences/public/cpp",
      "//services/preferences/tracked",
      "//services/service_manager/public/cpp",
-+    "//simprint",
++    "//mz",
      "//skia",
      "//sql",
      "//storage/browser",

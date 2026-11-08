@@ -1,7 +1,7 @@
-diff --git a/simprint/eventbus/topics.h b/simprint/eventbus/topics.h
+diff --git a/mz/eventbus/topics.h b/mz/eventbus/topics.h
 index b6b963418caf7..1a15755bc6aae 100644
---- a/simprint/eventbus/topics.h
-+++ b/simprint/eventbus/topics.h
+--- a/mz/eventbus/topics.h
++++ b/mz/eventbus/topics.h
 @@ -50,6 +50,9 @@ enum class Topic : uint16_t {
    kSyncRole = 0x0801,        // 同步角色：0=关闭 1=主控 2=从控
    kSyncInputDebug = 0x0802,  // 同步输入调试日志：C++ 发往 Tauri 打印

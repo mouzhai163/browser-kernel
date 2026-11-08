@@ -14,8 +14,8 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
-#if defined(SIMPRINT_FINGERPRINT_ENABLED)
-#include "simprint/fingerprint/fingerprint_config.h"
+#if defined(MZ_FINGERPRINT_ENABLED)
+#include "mz/fingerprint/fingerprint_config.h"
 #endif
 
 namespace {
@@ -34,7 +34,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         description:
           "Fetches the user's public IP address and location information "
           "from third-party services for display on the review page."
-        trigger: "User opens the review page (simprint://review)."
+        trigger: "User opens the review page (mz://review)."
         data: "No user data is sent. The service sees the request IP address."
         destination: OTHER
       }
@@ -58,8 +58,8 @@ void ReviewPageHandler::GetFingerprintData(GetFingerprintDataCallback callback) 
   LOG(INFO) << "ReviewPageHandler::GetFingerprintData called";
   auto data = mojom::review_page::FingerprintData::New();
 
-#if defined(SIMPRINT_FINGERPRINT_ENABLED)
-  auto* config_manager = simprint::fingerprint::FingerprintConfigManager::GetInstance();
+#if defined(MZ_FINGERPRINT_ENABLED)
+  auto* config_manager = mz::fingerprint::FingerprintConfigManager::GetInstance();
   LOG(INFO) << "config_manager: " << (config_manager ? "exists" : "null");
   if (config_manager) {
     LOG(INFO) << "IsConfigLoaded: " << (config_manager->IsConfigLoaded() ? "true" : "false");

@@ -6,12 +6,12 @@
 
 本模块实现了完整的浏览器指纹防护系统，包括：
 
-### 1. 配置系统 (`simprint/config`)
+### 1. 配置系统 (`mz/config`)
 - `FingerprintConfigStorage`: 指纹配置的存储和管理
 - 支持动态加载和更新指纹配置
 - 提供线程安全的配置访问接口
 
-### 2. 指纹伪装 (`simprint/fingerprint`)
+### 2. 指纹伪装 (`mz/fingerprint`)
 - **Canvas 指纹**: 修改 Canvas 2D/WebGL 渲染输出
 - **WebGL 指纹**: 伪装 GPU 信息、渲染器、供应商
 - **WebGPU 指纹**: 伪装 GPU 适配器信息
@@ -36,7 +36,7 @@
 基于 `git diff 879a34261b0ba..1a044afbb2149`（auth 终点 → fingerprint 最新）
 
 包含以下提交：
-- `9be2688`: 移除 SIMPRINT_LOG 调用（syner 模块清理）
+- `9be2688`: 移除 MZ_LOG 调用（syner 模块清理）
 - `947f2bf`: 集成指纹配置系统（84 文件，+4238/-173 行）
 - `b2b202e`: 字体列表配置存储（10 文件，+379/-30 行）
 - `78482d8`: 字体白名单拦截 API 层（3 文件，+58/-13 行）
@@ -47,10 +47,10 @@
 ```
 overlay/fingerprint/
 ├── patches/           # 68 个补丁文件
-│   ├── 001-030: Chrome/Components/Content/Net/Services/Simprint
+│   ├── 001-030: Chrome/Components/Content/Net/Services/MZ
 │   └── 031-068: Blink (Core/Modules/Platform)
 ├── sources/
-│   └── simprint/      # 新增的 simprint 模块源文件
+│   └── mz/      # 新增的 mz 模块源文件
 │       ├── config_*   # 配置系统（3 文件）
 │       └── fingerprint_*  # 指纹模块（13 文件）
 ├── scripts/
@@ -82,13 +82,13 @@ overlay/fingerprint/
 
 ## 依赖关系
 
-- 依赖 `simprint/auth` 模块（启动认证）
-- 依赖 `simprint/eventbus` 模块（事件通信）
+- 依赖 `mz/auth` 模块（启动认证）
+- 依赖 `mz/eventbus` 模块（事件通信）
 - 被 Chrome Browser、Content、Blink 各层调用
 
 ## 注意事项
 
 1. 本模块必须在 `auth` 和 `syner` 之后应用
-2. 删除了 `simprint/console_log` 模块（已废弃）
-3. 补丁包含对 `sync_input_*.cc` 的修改（移除 SIMPRINT_LOG）
+2. 删除了 `mz/console_log` 模块（已废弃）
+3. 补丁包含对 `sync_input_*.cc` 的修改（移除 MZ_LOG）
 4. 字体白名单配置需要在运行时动态加载

@@ -5,7 +5,7 @@ diff --git a/third_party/blink/renderer/core/BUILD.gn b/third_party/blink/render
      ":generate_eventhandler_names",
      ":make_deprecation_info",
      ":xml_ffi",
-+    "//simprint/fingerprint",
++    "//mz/fingerprint",
      "//base",
      "//components/paint_preview/common",
      "//components/performance_manager/public/mojom:mojom_blink",

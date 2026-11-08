@@ -1,8 +1,8 @@
-// Simprint compatibility shim.
+// MZ compatibility shim.
 //
 // Upstream removed chrome/browser/ui/browser_finder.h in favour of
 // BrowserCollection (GlobalBrowserCollection / ProfileBrowserCollection).
-// Simprint code and patches still use the old chrome::Find*() helpers, so they
+// MZ code and patches still use the old chrome::Find*() helpers, so they
 // are re-implemented here on top of the new API. On desktop every
 // BrowserWindowInterface is a Browser.
 

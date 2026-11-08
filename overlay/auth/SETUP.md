@@ -5,19 +5,19 @@
 已成功创建 `overlay/auth` 模块，包含以下内容：
 
 ### 1. 源文件 (sources/)
-- `simprint/auth/BUILD.gn` - 编译配置
-- `simprint/auth/auth_manager.h/cc` - 认证管理器
-- `simprint/auth/startup_auth_checker.h/cc` - 启动认证检查器
-- `simprint/auth/README.md` - 使用文档
+- `mz/auth/BUILD.gn` - 编译配置
+- `mz/auth/auth_manager.h/cc` - 认证管理器
+- `mz/auth/startup_auth_checker.h/cc` - 启动认证检查器
+- `mz/auth/README.md` - 使用文档
 
 ### 2. 补丁文件 (patches/)
-- `001-chrome-browser-build-gn.patch` - 添加 simprint/auth 依赖
+- `001-chrome-browser-build-gn.patch` - 添加 mz/auth 依赖
 - `002-chrome-browser-main.patch` - 集成启动认证检查
 - `003-eventbus-topics-h.patch` - 添加 kLaunchConfig Topic
 - `004-eventbus-h.patch` - 添加 AuthInfo 结构和认证方法
 - `005-eventbus-cc.patch` - 实现认证和配置处理逻辑
-- `006-sync-input-capture-handler.patch` - 移除 SIMPRINT_LOG 调用
-- `007-sync-input-replay.patch` - 移除 SIMPRINT_LOG 调用
+- `006-sync-input-capture-handler.patch` - 移除 MZ_LOG 调用
+- `007-sync-input-replay.patch` - 移除 MZ_LOG 调用
 
 ### 3. 脚本文件
 - `run.py` - 主运行脚本
@@ -28,7 +28,7 @@
 ## 功能说明
 
 ### 启动认证检查
-- 浏览器启动时检查 `--simprint-env-id` 参数
+- 浏览器启动时检查 `--mz-env-id` 参数
 - 有参数：通过 EventBus IPC 向 Tauri 查询认证状态（5秒超时）
   - 已登录 → 继续运行
   - 未登录/超时/IPC异常 → 静默退出
@@ -46,9 +46,9 @@
 
 ## 对应的 Git 提交
 
-此模块基于 simprint-browser 仓库的以下提交：
+此模块基于 mz-browser 仓库的以下提交：
 - `879a342` - feat(auth): 添加启动认证检查和 LaunchConfig 支持
-- `9be2688` - Remove SIMPRINT_LOG calls from sync input handlers
+- `9be2688` - Remove MZ_LOG calls from sync input handlers
 
 ## 注意事项
 

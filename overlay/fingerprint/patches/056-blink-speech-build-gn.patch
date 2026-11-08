@@ -6,6 +6,6 @@ index e49c0234d1651..3423a9b4195d2 100644
      "//media",
      "//media/mojo/mojom:speech_recognition_audio_forwarder_blink",
      "//third_party/blink/renderer/modules/mediastream",
-+    "//simprint/fingerprint",
++    "//mz/fingerprint",
    ]
  }

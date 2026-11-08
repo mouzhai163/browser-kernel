@@ -11,8 +11,8 @@ index 6e261416165ac..b8768324f3e55 100644
          margin: 0;
        }
  
-+      /* Simprint 品牌背景 Canvas */
-+      #simprintBgCanvas {
++      /* MZ 品牌背景 Canvas */
++      #mzBgCanvas {
 +        position: fixed;
 +        top: 0;
 +        left: 0;
@@ -23,7 +23,7 @@ index 6e261416165ac..b8768324f3e55 100644
 +      }
 +
 +      /* 光晕叠加层 */
-+      #simprintGlow {
++      #mzGlow {
 +        position: fixed;
 +        top: 0;
 +        left: 0;
@@ -58,8 +58,8 @@ index 6e261416165ac..b8768324f3e55 100644
      </style>
    </head>
    <body>
-+    <canvas id="simprintBgCanvas"></canvas>
-+    <div id="simprintGlow"></div>
++    <canvas id="mzBgCanvas"></canvas>
++    <div id="mzGlow"></div>
      <iframe id="backgroundImage" src="$i18nRaw{backgroundImageUrl}"></iframe>
      <ntp-app></ntp-app>
      <script type="module" src="new_tab_page.js"></script>

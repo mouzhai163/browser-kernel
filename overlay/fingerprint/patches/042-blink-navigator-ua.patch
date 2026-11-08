@@ -7,7 +7,7 @@ diff --git a/third_party/blink/renderer/core/frame/navigator_ua.cc b/third_party
  #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 +#include "base/logging.h"
 +#include "base/strings/string_number_conversions.h"
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/config/fingerprint_config_storage.h"
  #include "third_party/blink/renderer/core/frame/navigator_ua_data.h"
  #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
  
@@ -16,7 +16,7 @@ diff --git a/third_party/blink/renderer/core/frame/navigator_ua.cc b/third_party
  
    UserAgentMetadata metadata = GetUserAgentMetadata();
 +
-+  // Simprint: UA-CH 品牌/版本/平台全部在浏览器侧（components/embedder_support/
++  // MZ: UA-CH 品牌/版本/平台全部在浏览器侧（components/embedder_support/
 +  // user_agent_utils.cc）生成，HTTP 头与这里共用同一份 metadata，不在 JS 侧再改，
 +  // 否则 Sec-CH-UA 头与 navigator.userAgentData 会对不上。
    ua_data->SetBrandVersionList(metadata.brand_version_list);

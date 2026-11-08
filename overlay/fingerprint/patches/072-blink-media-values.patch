@@ -5,7 +5,7 @@ diff --git a/third_party/blink/renderer/core/css/media_values.cc b/third_party/b
  #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
  #include "third_party/blink/renderer/core/css/media_feature_overrides.h"
  #include "third_party/blink/renderer/core/css/media_values.h"
-+#include "simprint/fingerprint/screen_hardware_fingerprint.h"
++#include "mz/fingerprint/screen_hardware_fingerprint.h"
  #include "third_party/blink/renderer/core/css/media_values_cached.h"
  #include "third_party/blink/renderer/core/css/media_values_dynamic.h"
  #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -13,9 +13,9 @@ diff --git a/third_party/blink/renderer/core/css/media_values.cc b/third_party/b
  
  int MediaValues::CalculateDeviceWidth(LocalFrame* frame) {
    DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
-+  // Simprint: 媒体查询 (device-width) 必须和 screen.width 一致，否则能读出真实显示器分辨率。
++  // MZ: 媒体查询 (device-width) 必须和 screen.width 一致，否则能读出真实显示器分辨率。
 +  if (int configured =
-+          simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredScreenWidth();
++          mz::fingerprint::ScreenHardwareFingerprint::GetConfiguredScreenWidth();
 +      configured > 0) {
 +    return configured;
 +  }
@@ -27,7 +27,7 @@ diff --git a/third_party/blink/renderer/core/css/media_values.cc b/third_party/b
  int MediaValues::CalculateDeviceHeight(LocalFrame* frame) {
    DCHECK(frame && frame->View() && frame->GetSettings() && frame->GetPage());
 +  if (int configured =
-+          simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredScreenHeight();
++          mz::fingerprint::ScreenHardwareFingerprint::GetConfiguredScreenHeight();
 +      configured > 0) {
 +    return configured;
 +  }
@@ -38,9 +38,9 @@ diff --git a/third_party/blink/renderer/core/css/media_values.cc b/third_party/b
  }
  
  float MediaValues::CalculateDevicePixelRatio(LocalFrame* frame) {
-+  // Simprint: (resolution) / (-webkit-device-pixel-ratio) 必须和 window.devicePixelRatio 一致。
++  // MZ: (resolution) / (-webkit-device-pixel-ratio) 必须和 window.devicePixelRatio 一致。
 +  if (double configured =
-+          simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredDevicePixelRatio();
++          mz::fingerprint::ScreenHardwareFingerprint::GetConfiguredDevicePixelRatio();
 +      configured > 0) {
 +    return static_cast<float>(configured);
 +  }
@@ -51,9 +51,9 @@ diff --git a/third_party/blink/renderer/core/css/media_values.cc b/third_party/b
      LocalFrame* frame) {
    DCHECK(frame);
    DCHECK(frame->GetSettings());
-+  // Simprint: 桌面环境（触摸点配置为 0）只有 fine 指针 + hover；
++  // MZ: 桌面环境（触摸点配置为 0）只有 fine 指针 + hover；
 +  // 否则 (pointer)/(any-pointer: coarse) 会暴露宿主机的触摸屏。
-+  if (simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints() == 0) {
++  if (mz::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints() == 0) {
 +    return mojom::blink::PointerType::kPointerFineType;
 +  }
    return frame->GetSettings()->GetPrimaryPointerType();
@@ -62,7 +62,7 @@ diff --git a/third_party/blink/renderer/core/css/media_values.cc b/third_party/b
  int MediaValues::CalculateAvailablePointerTypes(LocalFrame* frame) {
    DCHECK(frame);
    DCHECK(frame->GetSettings());
-+  if (simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints() == 0) {
++  if (mz::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints() == 0) {
 +    return static_cast<int>(mojom::blink::PointerType::kPointerFineType);
 +  }
    return frame->GetSettings()->GetAvailablePointerTypes();
@@ -72,7 +72,7 @@ diff --git a/third_party/blink/renderer/core/css/media_values.cc b/third_party/b
      LocalFrame* frame) {
    DCHECK(frame);
    DCHECK(frame->GetSettings());
-+  if (simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints() == 0) {
++  if (mz::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints() == 0) {
 +    return mojom::blink::HoverType::kHoverHoverType;
 +  }
    return frame->GetSettings()->GetPrimaryHoverType();
@@ -82,7 +82,7 @@ diff --git a/third_party/blink/renderer/core/css/media_values.cc b/third_party/b
  int MediaValues::CalculateAvailableHoverTypes(LocalFrame* frame) {
    DCHECK(frame);
    DCHECK(frame->GetSettings());
-+  if (simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints() == 0) {
++  if (mz::fingerprint::ScreenHardwareFingerprint::GetConfiguredMaxTouchPoints() == 0) {
 +    return static_cast<int>(mojom::blink::HoverType::kHoverHoverType);
 +  }
    return frame->GetSettings()->GetAvailableHoverTypes();

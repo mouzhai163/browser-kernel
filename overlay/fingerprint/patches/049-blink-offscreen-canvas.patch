@@ -7,7 +7,7 @@ diff --git a/third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.cc
  #include "third_party/blink/renderer/platform/fonts/plain_text_painter.h"
 +#include "third_party/skia/include/core/SkBitmap.h"
 +#include "third_party/skia/include/core/SkImage.h"
-+#include "simprint/fingerprint/browser_fingerprint.h"
++#include "mz/fingerprint/browser_fingerprint.h"
  #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
  #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
  #include "third_party/blink/renderer/platform/graphics/exported_canvas_resource.h"
@@ -15,11 +15,11 @@ diff --git a/third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.cc
    base::TimeTicks start_time = base::TimeTicks::Now();
    scoped_refptr<StaticBitmapImage> image_bitmap = context_->GetImage();
    if (image_bitmap) {
-+    // Simprint: 应用 Canvas 指纹噪声（与 HTMLCanvasElement 保持一致）
++    // MZ: 应用 Canvas 指纹噪声（与 HTMLCanvasElement 保持一致）
 +    SkBitmap bitmap;
 +    if (image_bitmap->PaintImageForCurrentFrame().GetSwSkImage()->asLegacyBitmap(&bitmap)) {
 +      if (bitmap.getPixels()) {
-+        simprint::fingerprint::BrowserFingerprint::ApplyCanvasNoise(
++        mz::fingerprint::BrowserFingerprint::ApplyCanvasNoise(
 +            static_cast<unsigned char*>(bitmap.getPixels()),
 +            bitmap.computeByteSize());
 +        // 从修改后的 bitmap 创建新的 StaticBitmapImage

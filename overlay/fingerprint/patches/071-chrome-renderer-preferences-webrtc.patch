@@ -5,7 +5,7 @@ diff --git a/chrome/browser/renderer_preferences_util.cc b/chrome/browser/render
  // found in the LICENSE file.
  
  #include "chrome/browser/renderer_preferences_util.h"
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/config/fingerprint_config_storage.h"
  
  #include <stdint.h>
  
@@ -13,11 +13,11 @@ diff --git a/chrome/browser/renderer_preferences_util.cc b/chrome/browser/render
    prefs->webrtc_ip_handling_policy = blink::ToWebRTCIPHandlingPolicy(
        pref_service->GetString(prefs::kWebRTCIPHandlingPolicy));
  
-+  // Simprint: 除非明确配置为 "real"，否则强制 disable_non_proxied_udp。
++  // MZ: 除非明确配置为 "real"，否则强制 disable_non_proxied_udp。
 +  // 这样 WebRTC 根本不会收集 host/srflx 候选，页面从 SDP、getStats() 或事件里都拿不到
 +  // 真实 IP；只在 onicecandidate 里过滤是不够的（localDescription.sdp 仍会带出候选）。
 +  // 空值/未知值/未实现的 "replace" 也按禁用处理。
-+  if (simprint::config::GetWebRTCMode() != "real") {
++  if (mz::config::GetWebRTCMode() != "real") {
 +    prefs->webrtc_ip_handling_policy =
 +        blink::mojom::WebRtcIpHandlingPolicy::kDisableNonProxiedUdp;
 +  }

@@ -6,9 +6,9 @@ index 48d5d5c0eb741..cd39392504a0f 100644
    // This may only be called on NetworkContexts created with the constructor
    // that calls MakeURLRequestContext().
    DCHECK(user_agent_settings_);
-+  LOG(INFO) << "[Simprint Language] NetworkContext::SetAcceptLanguage called with: " << new_accept_language;
++  LOG(INFO) << "[MZ Language] NetworkContext::SetAcceptLanguage called with: " << new_accept_language;
    user_agent_settings_->set_accept_language(new_accept_language);
-+  LOG(INFO) << "[Simprint Language] NetworkContext::SetAcceptLanguage - user_agent_settings updated";
++  LOG(INFO) << "[MZ Language] NetworkContext::SetAcceptLanguage - user_agent_settings updated";
  }
  
  void NetworkContext::SetEnableReferrers(bool enable_referrers) {

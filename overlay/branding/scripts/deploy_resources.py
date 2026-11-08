@@ -34,7 +34,7 @@ THEME_PRODUCT_LOGO_FILES = [
 # default_*_percent 中需要的 32px logo（设置栏、关于页等）
 THEME_SCALED_32_LOGO = "product_logo_32.png"
 
-# default_*_percent/simprint/ 下除 32 外可从 overlay 覆盖的 scaled logo（16、name_22 等）
+# default_*_percent/mz/ 下除 32 外可从 overlay 覆盖的 scaled logo（16、name_22 等）
 THEME_SCALED_OVERLAY_LOGO_FILES = [
     "product_logo_16.png",
     "product_logo_name_22.png",
@@ -329,7 +329,7 @@ def _derive_strings(ctx: DeployContext, config: dict, grd_dir: Path, xtb_dir: Pa
     (messages and grit variables appear and disappear), so the branded copy is always
     generated from the tree being built.
     """
-    product = config.get("product_display_name", "Simprint").strip().strip("'\"")
+    product = config.get("product_display_name", "MZ Browser").strip().strip("'\"")
     src_grd = grd_dir / (upstream_stem + ".grd")
     if not src_grd.is_file():
         raise FileNotFoundError("upstream %s not found" % src_grd)
@@ -356,7 +356,7 @@ def _deploy_brand_strings(ctx: DeployContext, config: dict) -> None:
 
 def run(chromium_src, kernel_root, project_root):
     config = load_config_from_project_root(project_root)
-    component = config.get("branding_path_component", "simprint")
+    component = config.get("branding_path_component", "mz")
     icon_names, fallback = _icon_names_and_fallback(component)
 
     theme = Path(chromium_src) / "chrome" / "app" / "theme"

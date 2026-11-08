@@ -5,7 +5,7 @@ diff --git a/third_party/blink/renderer/core/loader/frame_fetch_context.cc b/thi
  #include "third_party/blink/renderer/core/loader/resource_initiator_helper.h"
  #include "third_party/blink/renderer/core/loader/resource_load_observer_for_frame.h"
  #include "third_party/blink/renderer/core/loader/subresource_filter.h"
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/config/fingerprint_config_storage.h"
  #include "third_party/blink/renderer/core/page/page.h"
  #include "third_party/blink/renderer/core/paint/timing/first_meaningful_paint_detector.h"
  #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -14,8 +14,8 @@ diff --git a/third_party/blink/renderer/core/loader/frame_fetch_context.cc b/thi
          http_names::kDeviceMemory_DEPRECATED,
          AtomicString(String::Number(
 -            ApproximatedDeviceMemory::GetApproximatedDeviceMemory())));
-+            simprint::config::GetClampedDeviceMemory() > 0
-+                ? simprint::config::GetClampedDeviceMemory()
++            mz::config::GetClampedDeviceMemory() > 0
++                ? mz::config::GetClampedDeviceMemory()
 +                : ApproximatedDeviceMemory::GetApproximatedDeviceMemory())));
    }
  
@@ -25,8 +25,8 @@ diff --git a/third_party/blink/renderer/core/loader/frame_fetch_context.cc b/thi
          http_names::kDeviceMemory,
          AtomicString(String::Number(
 -            ApproximatedDeviceMemory::GetApproximatedDeviceMemory())));
-+            simprint::config::GetClampedDeviceMemory() > 0
-+                ? simprint::config::GetClampedDeviceMemory()
++            mz::config::GetClampedDeviceMemory() > 0
++                ? mz::config::GetClampedDeviceMemory()
 +                : ApproximatedDeviceMemory::GetApproximatedDeviceMemory())));
    }
  
@@ -36,15 +36,15 @@ diff --git a/third_party/blink/renderer/core/loader/frame_fetch_context.cc b/thi
    LocalFrame* frame = document_->GetFrame();
    DCHECK(frame);
 +
-+  // Check simprint configuration first
-+  std::string simprint_language = simprint::config::GetLanguage();
-+  if (!simprint_language.empty()) {
-+    LOG(INFO) << "[Simprint Language] FrameFetchContext::GetReducedAcceptLanguage - using simprint config: " << simprint_language;
-+    String language_str = String::FromUtf8(simprint_language.c_str());
++  // Check mz configuration first
++  std::string mz_language = mz::config::GetLanguage();
++  if (!mz_language.empty()) {
++    LOG(INFO) << "[MZ Language] FrameFetchContext::GetReducedAcceptLanguage - using mz config: " << mz_language;
++    String language_str = String::FromUtf8(mz_language.c_str());
 +    String expanded_language = network_utils::ExpandLanguageList(language_str);
-+    LOG(INFO) << "[Simprint Language] FrameFetchContext::GetReducedAcceptLanguage - ExpandLanguageList returned: " << expanded_language;
++    LOG(INFO) << "[MZ Language] FrameFetchContext::GetReducedAcceptLanguage - ExpandLanguageList returned: " << expanded_language;
 +    String result = network_utils::GenerateAcceptLanguageHeader(expanded_language);
-+    LOG(INFO) << "[Simprint Language] FrameFetchContext::GetReducedAcceptLanguage - GenerateAcceptLanguageHeader returned: " << result;
++    LOG(INFO) << "[MZ Language] FrameFetchContext::GetReducedAcceptLanguage - GenerateAcceptLanguageHeader returned: " << result;
 +    return result;
 +  }
 +

@@ -5,7 +5,7 @@ diff --git a/third_party/blink/renderer/core/css/local_font_face_source.cc b/thi
  #include "build/build_config.h"
  #include "third_party/blink/renderer/core/css/css_custom_font_data.h"
  #include "third_party/blink/renderer/core/css/css_font_face.h"
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/config/fingerprint_config_storage.h"
  #include "third_party/blink/renderer/core/probe/core_probes.h"
  #include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_block_list.h"
  #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -13,8 +13,8 @@ diff --git a/third_party/blink/renderer/core/css/local_font_face_source.cc b/thi
  
  bool LocalFontFaceSource::IsLocalFontAvailable(
      const FontDescription& font_description) const {
-+  // Simprint: hide non-whitelisted system fonts from local() sources.
-+  if (!simprint::config::IsLocalFontNameAllowed(font_name_.Utf8())) {
++  // MZ: hide non-whitelisted system fonts from local() sources.
++  if (!mz::config::IsLocalFontNameAllowed(font_name_.Utf8())) {
 +    return false;
 +  }
    // TODO(crbug.com/1025945): Properly handle Windows prior to 10 and Android.
@@ -24,8 +24,8 @@ diff --git a/third_party/blink/renderer/core/css/local_font_face_source.cc b/thi
  const SimpleFontData* LocalFontFaceSource::CreateFontData(
      const FontDescription& font_description,
      const FontSelectionCapabilities& font_selection_capabilities) {
-+  // Simprint: hide non-whitelisted system fonts from local() sources.
-+  if (!simprint::config::IsLocalFontNameAllowed(font_name_.Utf8())) {
++  // MZ: hide non-whitelisted system fonts from local() sources.
++  if (!mz::config::IsLocalFontNameAllowed(font_name_.Utf8())) {
 +    return nullptr;
 +  }
    if (!IsValid()) {

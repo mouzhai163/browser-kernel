@@ -5,9 +5,9 @@
 一个 Git 分支只表示一个 Chromium 基线：
 
 ```text
-simprint/m144 -> Chromium 144.0.7559.118
-simprint/m145 -> Chromium 145.x
-simprint/m146 -> Chromium 146.x
+mz/m144 -> Chromium 144.0.7559.118
+mz/m145 -> Chromium 145.x
+mz/m146 -> Chromium 146.x
 ```
 
 不要在同一分支中增加 `chromium-144/`、`chromium-145/` 等平行目录。当前分支的基线、Core API 与能力状态统一记录在 `port/manifest.toml`。
@@ -17,7 +17,7 @@ simprint/m146 -> Chromium 146.x
 ```text
 Chromium Browser  -> Browser Port  --+
 Chromium Content  -> Content Port  ---|
-Blink Renderer    -> Renderer Port ---+--> Simprint Core
+Blink Renderer    -> Renderer Port ---+--> MZ Core
 Network Service   -> Network Port  ---|
 Chromium UI       -> UI Port       --+
 ```
@@ -27,7 +27,7 @@ Chromium UI       -> UI Port       --+
 - Hook 可以很多，但应尽量只调用 Port，不在 Chromium 文件中展开产品逻辑。
 - 无法抽离的 Chromium 状态机修改属于 Port，不伪装成通用 Core。
 
-CI 会拒绝 Core 直接包含 `chrome/`、`content/`、`net/`、`services/`、Blink 或 UI 头文件。Core 接口按 `core/include/simprint/kernel_api/vN` 显式版本化。
+CI 会拒绝 Core 直接包含 `chrome/`、`content/`、`net/`、`services/`、Blink 或 UI 头文件。Core 接口按 `core/include/mz/kernel_api/vN` 显式版本化。
 
 ## 能力状态
 
@@ -48,7 +48,7 @@ uv run python -m driver plan --features launch-cookies --json
 
 ## 新 Chromium 版本
 
-1. 从对应 Chromium tag 创建新分支，例如 `simprint/m145`。
+1. 从对应 Chromium tag 创建新分支，例如 `mz/m145`。
 2. 保持 `core/`、`port/`、`driver/` 路径不变。
 3. 更新 `port/manifest.toml` 的精确版本和 milestone。
 4. 逐能力迁移 Port/Hook；Core API 不变时不要复制 Core。

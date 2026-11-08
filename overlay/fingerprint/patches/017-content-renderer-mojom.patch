@@ -8,5 +8,5 @@ index 5442148a11b10..f98235b7c28c9 100644
                       blink.mojom.PerformanceTier cpu_performance_tier,
 -                     uint64 trace_id);
 +                     uint64 trace_id,
-+                     string simprint_fingerprint_config);
++                     string mz_fingerprint_config);
  };

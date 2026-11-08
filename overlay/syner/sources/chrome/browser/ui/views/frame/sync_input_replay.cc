@@ -23,7 +23,7 @@
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
-#include "simprint/eventbus/eventbus.h"
+#include "mz/eventbus/eventbus.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -335,15 +335,15 @@ void ReplayKeyDown(views::View* root_view,
                    ui::KeyboardCode key_code,
                    int flags,
                    size_t root_index) {
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-    simprint::LogToConsole(base::StringPrintf(
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+    mz::LogToConsole(base::StringPrintf(
         "[SyncReplay] KeyDown key_code=%d flags=0x%x root_index=%zu", key_code,
         flags, root_index));
   }
   views::Widget* widget = root_view ? root_view->GetWidget() : nullptr;
   if (!widget) {
-    if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-      simprint::LogToConsole("[SyncReplay] KeyDown: widget is null");
+    if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+      mz::LogToConsole("[SyncReplay] KeyDown: widget is null");
     }
     return;
   }
@@ -390,8 +390,8 @@ void ReplayKeyDown(views::View* root_view,
       }
     }
   }
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-    simprint::LogToConsole(base::StringPrintf(
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+    mz::LogToConsole(base::StringPrintf(
         "[SyncReplay] KeyDown done, accelerator_handled=%d, handled=%d",
         accelerator_handled, event.handled()));
   }
@@ -401,15 +401,15 @@ void ReplayKeyUp(views::View* root_view,
                  ui::KeyboardCode key_code,
                  int flags,
                  size_t root_index) {
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-    simprint::LogToConsole(base::StringPrintf(
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+    mz::LogToConsole(base::StringPrintf(
         "[SyncReplay] KeyUp key_code=%d flags=0x%x root_index=%zu", key_code,
         flags, root_index));
   }
   views::Widget* widget = root_view ? root_view->GetWidget() : nullptr;
   if (!widget) {
-    if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-      simprint::LogToConsole("[SyncReplay] KeyUp: widget is null");
+    if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+      mz::LogToConsole("[SyncReplay] KeyUp: widget is null");
     }
     return;
   }
@@ -431,8 +431,8 @@ void ReplayKeyUp(views::View* root_view,
 #endif
       static_cast<ui::EventSource*>(widget)->SendEventToSink(&event);
   }
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-    simprint::LogToConsole(base::StringPrintf(
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+    mz::LogToConsole(base::StringPrintf(
         "[SyncReplay] KeyUp done, accelerator_handled=%d, handled=%d",
         accelerator_handled, event.handled()));
   }
@@ -461,7 +461,7 @@ void ReplayWheel(views::View* root_view,
 void ReplaySyncPaste(const std::u16string& text) {
   if (text.empty()) return;
   // 从控收到粘贴时输出到 DevTools Console，便于调试和确认内容已送达
-  if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+  if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
   }
   Browser* browser = chrome::FindLastActive();
   if (!browser) return;
@@ -486,15 +486,15 @@ void ReplaySyncInputEvent(std::vector<uint8_t> data) {
 
   if (ev_type == kTypeKeyDown || ev_type == kTypeKeyUp) {
     if (data.size() < kKeyEventPayloadSize) {
-      if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+      if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
       }
       return;
     }
     views::View* root_view = nullptr;
     size_t root_index = 0;
     if (!GetRootViewForKeyEvent(data, &root_view, &root_index)) {
-      if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-        simprint::LogToConsole(
+      if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+        mz::LogToConsole(
             "[SyncReplay] Key: GetRootViewForKeyEvent failed (no browser?)");
       }
       return;
@@ -515,7 +515,7 @@ void ReplaySyncInputEvent(std::vector<uint8_t> data) {
   // 处理 IME 文本提交事件
   if (ev_type == kTypeTextCommit) {
     if (data.size() < 2) {
-      if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+      if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
       }
       return;
     }
@@ -535,8 +535,8 @@ void ReplaySyncInputEvent(std::vector<uint8_t> data) {
 
     // 根据 root_index 获取对应的 root_view 和 Widget
     std::vector<views::View*> root_views = browser_view->GetSyncReplayRootViews();
-    if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-      simprint::LogToConsole(base::StringPrintf(
+    if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+      mz::LogToConsole(base::StringPrintf(
           "[SyncReplay] TextCommit: root_index=%d, root_views.size()=%zu",
           (int)root_index, root_views.size()));
     }
@@ -546,8 +546,8 @@ void ReplaySyncInputEvent(std::vector<uint8_t> data) {
     }
     size_t idx = static_cast<size_t>(root_index);
     if (idx >= root_views.size()) {
-      if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-        simprint::LogToConsole(base::StringPrintf(
+      if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+        mz::LogToConsole(base::StringPrintf(
             "[SyncReplay] TextCommit: idx %zu >= root_views.size() %zu, using 0",
             idx, root_views.size()));
       }
@@ -564,8 +564,8 @@ void ReplaySyncInputEvent(std::vector<uint8_t> data) {
       return;
     }
 
-    if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-      simprint::LogToConsole(base::StringPrintf(
+    if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+      mz::LogToConsole(base::StringPrintf(
           "[SyncReplay] TextCommit: widget=%p", widget));
     }
 
@@ -573,8 +573,8 @@ void ReplaySyncInputEvent(std::vector<uint8_t> data) {
     if (input_method) {
       ui::TextInputClient* client = input_method->GetTextInputClient();
       if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
-        if (simprint::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
-          simprint::LogToConsole(base::StringPrintf(
+        if (mz::eventbus::EventBus::GetInstance().GetSyncRole() == 2) {
+          mz::LogToConsole(base::StringPrintf(
               "[SyncReplay] TextCommit: inserting text to client=%p", client));
         }
         // 直接插入文本

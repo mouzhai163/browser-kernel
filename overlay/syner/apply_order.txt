@@ -1,4 +1,4 @@
-# Simprint Syner Overlay - Patch Application Order
+# MZ Syner Overlay - Patch Application Order
 # 同步功能模块：EventBus IPC 通信 + 输入同步（键盘、鼠标、IME）
 # 由 git diff 45c01f3f68a83..105f9bc65d5dc 生成
 

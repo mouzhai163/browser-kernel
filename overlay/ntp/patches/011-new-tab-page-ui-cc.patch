@@ -6,7 +6,7 @@ index 8208b61bcc71b..86e7890b73970 100644
  #if !defined(OFFICIAL_BUILD)
  #include "chrome/browser/ui/webui/new_tab_page/foo/foo_handler.h"
  #endif
-+#include "chrome/browser/ui/webui/new_tab_page/simprint_ip/simprint_ip_handler.h"
++#include "chrome/browser/ui/webui/new_tab_page/mz_ip/mz_ip_handler.h"
  
  using content::BrowserContext;
  using content::WebContents;
@@ -15,9 +15,9 @@ index 8208b61bcc71b..86e7890b73970 100644
  #endif
  
 +void NewTabPageUI::BindInterface(
-+    mojo::PendingReceiver<simprint_ip::mojom::SimprintIpHandler>
++    mojo::PendingReceiver<mz_ip::mojom::MzIpHandler>
 +        pending_page_handler) {
-+  simprint_ip_handler_ = std::make_unique<SimprintIpHandler>(
++  mz_ip_handler_ = std::make_unique<MzIpHandler>(
 +      std::move(pending_page_handler), profile_);
 +}
 +

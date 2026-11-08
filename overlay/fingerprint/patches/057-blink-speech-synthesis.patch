@@ -14,8 +14,8 @@ diff --git a/third_party/blink/renderer/modules/speech/speech_synthesis.cc b/thi
  #include "third_party/blink/renderer/core/frame/local_dom_window.h"
  #include "third_party/blink/renderer/core/frame/web_feature.h"
  #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
-+#include "simprint/fingerprint/browser_fingerprint.h"
-+#include "simprint/fingerprint/network_location_fingerprint.h"
++#include "mz/fingerprint/browser_fingerprint.h"
++#include "mz/fingerprint/network_location_fingerprint.h"
  #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
  #include "third_party/blink/renderer/core/timing/performance.h"
  #include "third_party/blink/renderer/modules/speech/speech_synthesis_error_event.h"
@@ -25,72 +25,72 @@ diff --git a/third_party/blink/renderer/modules/speech/speech_synthesis.cc b/thi
  
 +namespace {
 +
-+// Simprint: the real list is the installed Windows TTS voices, which reveals the
++// MZ: the real list is the installed Windows TTS voices, which reveals the
 +// machine's real UI/language packs (e.g. de-DE + zh-CN while the profile says
 +// en-US). In every mode except "system" expose a stock Windows voice set that
 +// matches the configured language instead.
-+struct SimprintVoice {
++struct MzVoice {
 +  const char* name;
 +  const char* lang;
 +};
 +
-+constexpr SimprintVoice kEnUsVoices[] = {
++constexpr MzVoice kEnUsVoices[] = {
 +    {"Microsoft David - English (United States)", "en-US"},
 +    {"Microsoft Mark - English (United States)", "en-US"},
 +    {"Microsoft Zira - English (United States)", "en-US"},
 +};
 +
-+struct SimprintVoiceSet {
++struct MzVoiceSet {
 +  const char* language_prefix;  // matched against the configured language
-+  RAW_PTR_EXCLUSION base::span<const SimprintVoice> voices;  // static data
++  RAW_PTR_EXCLUSION base::span<const MzVoice> voices;  // static data
 +};
 +
-+constexpr SimprintVoice kEnGbVoices[] = {
++constexpr MzVoice kEnGbVoices[] = {
 +    {"Microsoft George - English (United Kingdom)", "en-GB"},
 +    {"Microsoft Hazel - English (United Kingdom)", "en-GB"},
 +    {"Microsoft Susan - English (United Kingdom)", "en-GB"},
 +};
-+constexpr SimprintVoice kZhCnVoices[] = {
++constexpr MzVoice kZhCnVoices[] = {
 +    {"Microsoft Huihui - Chinese (Simplified, PRC)", "zh-CN"},
 +    {"Microsoft Kangkang - Chinese (Simplified, PRC)", "zh-CN"},
 +    {"Microsoft Yaoyao - Chinese (Simplified, PRC)", "zh-CN"},
 +};
-+constexpr SimprintVoice kDeDeVoices[] = {
++constexpr MzVoice kDeDeVoices[] = {
 +    {"Microsoft Hedda - German (Germany)", "de-DE"},
 +    {"Microsoft Katja - German (Germany)", "de-DE"},
 +    {"Microsoft Stefan - German (Germany)", "de-DE"},
 +};
-+constexpr SimprintVoice kFrFrVoices[] = {
++constexpr MzVoice kFrFrVoices[] = {
 +    {"Microsoft Hortense - French (France)", "fr-FR"},
 +    {"Microsoft Julie - French (France)", "fr-FR"},
 +    {"Microsoft Paul - French (France)", "fr-FR"},
 +};
-+constexpr SimprintVoice kEsEsVoices[] = {
++constexpr MzVoice kEsEsVoices[] = {
 +    {"Microsoft Helena - Spanish (Spain)", "es-ES"},
 +    {"Microsoft Laura - Spanish (Spain)", "es-ES"},
 +    {"Microsoft Pablo - Spanish (Spain)", "es-ES"},
 +};
-+constexpr SimprintVoice kJaJpVoices[] = {
++constexpr MzVoice kJaJpVoices[] = {
 +    {"Microsoft Ayumi - Japanese (Japan)", "ja-JP"},
 +    {"Microsoft Haruka - Japanese (Japan)", "ja-JP"},
 +    {"Microsoft Ichiro - Japanese (Japan)", "ja-JP"},
 +};
-+constexpr SimprintVoice kKoKrVoices[] = {
++constexpr MzVoice kKoKrVoices[] = {
 +    {"Microsoft Heami - Korean (Korea)", "ko-KR"},
 +};
-+constexpr SimprintVoice kRuRuVoices[] = {
++constexpr MzVoice kRuRuVoices[] = {
 +    {"Microsoft Irina - Russian (Russia)", "ru-RU"},
 +    {"Microsoft Pavel - Russian (Russia)", "ru-RU"},
 +};
-+constexpr SimprintVoice kPtBrVoices[] = {
++constexpr MzVoice kPtBrVoices[] = {
 +    {"Microsoft Maria - Portuguese (Brazil)", "pt-BR"},
 +};
-+constexpr SimprintVoice kItItVoices[] = {
++constexpr MzVoice kItItVoices[] = {
 +    {"Microsoft Elsa - Italian (Italy)", "it-IT"},
 +    {"Microsoft Cosimo - Italian (Italy)", "it-IT"},
 +};
 +
-+constexpr SimprintVoiceSet kVoiceSets[] = {
++constexpr MzVoiceSet kVoiceSets[] = {
 +    {"en-GB", kEnGbVoices},
 +    {"zh", kZhCnVoices},
 +    {"de", kDeDeVoices},
@@ -103,10 +103,10 @@ diff --git a/third_party/blink/renderer/modules/speech/speech_synthesis.cc b/thi
 +    {"it", kItItVoices},
 +};
 +
-+Vector<mojom::blink::SpeechSynthesisVoicePtr> MakeSimprintVoices(
++Vector<mojom::blink::SpeechSynthesisVoicePtr> MakeMzVoices(
 +    const std::string& language) {
 +  Vector<mojom::blink::SpeechSynthesisVoicePtr> voices;
-+  auto add = [&voices](const SimprintVoice& v, bool is_default) {
++  auto add = [&voices](const MzVoice& v, bool is_default) {
 +    auto voice = mojom::blink::SpeechSynthesisVoice::New();
 +    voice->voice_uri = String::FromUtf8(v.name);
 +    voice->name = String::FromUtf8(v.name);
@@ -116,9 +116,9 @@ diff --git a/third_party/blink/renderer/modules/speech/speech_synthesis.cc b/thi
 +    voices.push_back(std::move(voice));
 +  };
 +  bool first = true;
-+  for (const SimprintVoiceSet& set : kVoiceSets) {
++  for (const MzVoiceSet& set : kVoiceSets) {
 +    if (language.rfind(set.language_prefix, 0) == 0) {
-+      for (const SimprintVoice& v : set.voices) {
++      for (const MzVoice& v : set.voices) {
 +        add(v, first);
 +        first = false;
 +      }
@@ -126,7 +126,7 @@ diff --git a/third_party/blink/renderer/modules/speech/speech_synthesis.cc b/thi
 +    }
 +  }
 +  // Windows always ships the en-US voices as well.
-+  for (const SimprintVoice& v : kEnUsVoices) {
++  for (const MzVoice& v : kEnUsVoices) {
 +    add(v, first);
 +    first = false;
 +  }
@@ -138,13 +138,13 @@ diff --git a/third_party/blink/renderer/modules/speech/speech_synthesis.cc b/thi
  void SpeechSynthesis::OnSetVoiceList(
      Vector<mojom::blink::SpeechSynthesisVoicePtr> mojom_voices) {
    voice_list_.clear();
-+  // Simprint: 非 "system" 模式一律使用与配置语言匹配的标准 Windows 语音列表。
++  // MZ: 非 "system" 模式一律使用与配置语言匹配的标准 Windows 语音列表。
 +  {
 +    const std::string speech_mode =
-+        simprint::fingerprint::BrowserFingerprint::GetConfiguredSpeechVoicesMode();
++        mz::fingerprint::BrowserFingerprint::GetConfiguredSpeechVoicesMode();
 +    if (!speech_mode.empty() && speech_mode != "system") {
-+      mojom_voices = MakeSimprintVoices(
-+          simprint::fingerprint::NetworkLocationFingerprint::GetConfiguredLanguage());
++      mojom_voices = MakeMzVoices(
++          mz::fingerprint::NetworkLocationFingerprint::GetConfiguredLanguage());
 +    }
 +  }
    for (auto& mojom_voice : mojom_voices) {

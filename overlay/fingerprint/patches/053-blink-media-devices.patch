@@ -6,7 +6,7 @@ diff --git a/third_party/blink/renderer/modules/mediastream/media_devices.cc b/t
  
  #include "third_party/blink/renderer/modules/mediastream/media_devices.h"
 +
-+#include "simprint/fingerprint/browser_fingerprint.h"
++#include "mz/fingerprint/browser_fingerprint.h"
  
  #include <algorithm>
  #include <utility>
@@ -17,7 +17,7 @@ diff --git a/third_party/blink/renderer/modules/mediastream/media_devices.cc b/t
 -  result_tracker->Resolve(media_devices);
 +
 +  // 应用 MediaDevices 指纹保护
-+  std::string mode = simprint::fingerprint::BrowserFingerprint::GetConfiguredMediaDevicesMode();
++  std::string mode = mz::fingerprint::BrowserFingerprint::GetConfiguredMediaDevicesMode();
 +  if (!mode.empty() && mode != "real") {
 +    // 每种类型只保留一个，并按 Chrome 的顺序（audioinput、videoinput、audiooutput）返回。
 +    // 宿主机没有的类型（例如台式机没有麦克风）补一个标准占位设备，否则设备清单会暴露
@@ -53,7 +53,7 @@ diff --git a/third_party/blink/renderer/modules/mediastream/media_devices.cc b/t
 +      return MakeGarbageCollected<MediaDeviceInfo>(
 +          permitted ? String(id) : g_empty_string,
 +          permitted ? String(label) : g_empty_string,
-+          permitted ? String("simprint-default-group") : g_empty_string, type);
++          permitted ? String("mz-default-group") : g_empty_string, type);
 +    };
 +    if (!audio_input) {
 +      audio_input = make_placeholder(
@@ -62,7 +62,7 @@ diff --git a/third_party/blink/renderer/modules/mediastream/media_devices.cc b/t
 +    }
 +    if (!video_input) {
 +      video_input = make_placeholder(
-+          "simprint-camera", "Integrated Camera",
++          "mz-camera", "Integrated Camera",
 +          mojom::blink::MediaDeviceType::kMediaVideoInput);
 +    }
 +    if (!audio_output) {

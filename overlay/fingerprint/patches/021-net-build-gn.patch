@@ -5,7 +5,7 @@ diff --git a/net/BUILD.gn b/net/BUILD.gn
      "//components/network_time/time_tracker",
      "//components/unexportable_keys",
      "//net/http:transport_security_state_generated_files",
-+    "//simprint/config",
++    "//mz/config",
      "//third_party/rust/sfv/v0_15/wrapper",
      "//third_party/simdutf",
    ]

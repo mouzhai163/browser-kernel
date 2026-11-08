@@ -2,7 +2,7 @@
 
 **启动 Cookie 注入与 LaunchConfig 后处理模块**
 
-本模块用于承接 `simprint/eventbus/eventbus.cc` 中与以下能力相关的后续增量：
+本模块用于承接 `mz/eventbus/eventbus.cc` 中与以下能力相关的后续增量：
 
 - 启动阶段 Cookie 注入
 - Cookie 注入完成后的账号导入编排

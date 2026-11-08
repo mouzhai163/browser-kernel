@@ -34,7 +34,7 @@ def run_phase(
 ) -> None:
     """
     对 order.txt 中列出的每个单元执行 run.py <phase>。
-    设置环境变量 SIMPRINT_CHROMIUM_ROOT, SIMPRINT_KERNEL_ROOT（仓库根）, SIMPRINT_OUT_DIR。
+    设置环境变量 MZ_CHROMIUM_ROOT, MZ_KERNEL_ROOT（仓库根）, MZ_OUT_DIR。
     """
     order = _read_order(repo_root)
     if not order:
@@ -43,9 +43,9 @@ def run_phase(
 
     env = {
         **os.environ,
-        "SIMPRINT_CHROMIUM_ROOT": str(chromium_src),
-        "SIMPRINT_KERNEL_ROOT": str(repo_root),
-        "SIMPRINT_OUT_DIR": (out_dir or os.environ.get("SIMPRINT_OUT_DIR") or "out/Default").strip("/"),
+        "MZ_CHROMIUM_ROOT": str(chromium_src),
+        "MZ_KERNEL_ROOT": str(repo_root),
+        "MZ_OUT_DIR": (out_dir or os.environ.get("MZ_OUT_DIR") or "out/Default").strip("/"),
     }
     for name in order:
         unit_dir = _unit_dir(repo_root, name)

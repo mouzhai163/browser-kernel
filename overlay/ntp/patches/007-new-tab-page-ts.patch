@@ -6,8 +6,8 @@ diff --git a/chrome/browser/resources/new_tab_page/new_tab_page.ts b/chrome/brow
   * things tests need.
   */
 +
-+// Simprint 品牌背景动画
-+import './simprint_ntp.js';
++// MZ 品牌背景动画
++import './mz_ntp.js';
  
  export {GlifAnimationState} from '//resources/cr_components/composebox/common.js';
  export {CustomizeButtonsElement} from 'chrome://new-tab-page/shared/customize_buttons/customize_buttons.js';

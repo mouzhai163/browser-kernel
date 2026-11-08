@@ -6,11 +6,11 @@ index 63a7dc99a9596..1943dcdff8cac 100644
  using blink::WebGestureEvent;
  using blink::WebTouchEvent;
  
-+// Simprint: 全局回调指针声明（在全局命名空间中）
++// MZ: 全局回调指针声明（在全局命名空间中）
 +using SyncTextCommitCallback = void (*)(uint8_t, const std::u16string&);
 +SyncTextCommitCallback g_sync_text_commit_callback = nullptr;
 +
-+// Simprint: 获取 Widget 的 root_index（由 chrome/ 层实现）
++// MZ: 获取 Widget 的 root_index（由 chrome/ 层实现）
 +using GetRootIndexForWidgetFunc = uint8_t (*)(void*);
 +extern GetRootIndexForWidgetFunc g_get_root_index_for_widget_func;
 +
@@ -21,7 +21,7 @@ index 63a7dc99a9596..1943dcdff8cac 100644
      InsertTextCursorBehavior cursor_behavior) {
    CHECK_NE(GetTextInputType(), ui::TEXT_INPUT_TYPE_NONE);
  
-+  // Simprint: 同步 IME 输入的文本到从控（用于中文等输入法）
++  // MZ: 同步 IME 输入的文本到从控（用于中文等输入法）
 +  if (!text.empty() && g_sync_text_commit_callback) {
 +    uint8_t root_index = 0;
 +    if (g_get_root_index_for_widget_func && window_) {

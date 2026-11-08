@@ -1,4 +1,4 @@
-# Simprint Proxy Overlay
+# MZ Proxy Overlay
 
 ## Purpose
 
@@ -28,7 +28,7 @@ overlay/proxy/
 │   └── deploy_resources.py
 └── sources/
     ├── net/socket/
-    └── simprint/
+    └── mz/
 ```
 
 ## Conventions

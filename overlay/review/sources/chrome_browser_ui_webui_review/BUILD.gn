@@ -22,7 +22,7 @@ source_set("review") {
     "review_ui.h",
   ]
 
-  defines = [ "SIMPRINT_FINGERPRINT_ENABLED" ]
+  defines = [ "MZ_FINGERPRINT_ENABLED" ]
 
   public_deps = [
     ":mojo_bindings",
@@ -37,7 +37,7 @@ source_set("review") {
     "//chrome/browser/resources/review:resources",
     "//net",
     "//services/network/public/cpp",
-    "//simprint/fingerprint",
+    "//mz/fingerprint",
     "//ui/webui",
   ]
 }

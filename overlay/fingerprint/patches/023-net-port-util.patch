@@ -6,7 +6,7 @@ index 49d0f744cc890..5c63a5aa7b6ae 100644
  #include "net/base/ip_endpoint.h"
  #include "net/base/parse_number.h"
  #include "url/url_constants.h"
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/config/fingerprint_config_storage.h"
  
  namespace net {
  
@@ -14,9 +14,9 @@ index 49d0f744cc890..5c63a5aa7b6ae 100644
    if (!IsPortValid(port))
      return false;
  
-+  // Simprint: 检查端口扫描防护配置
-+  if (simprint::config::ShouldBlockPort(port)) {
-+    LOG(INFO) << "[Simprint] Port " << port << " blocked by port scan protection";
++  // MZ: 检查端口扫描防护配置
++  if (mz::config::ShouldBlockPort(port)) {
++    LOG(INFO) << "[MZ] Port " << port << " blocked by port scan protection";
 +    return false;
 +  }
 +

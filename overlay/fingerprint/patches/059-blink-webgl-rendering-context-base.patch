@@ -13,7 +13,7 @@ diff --git a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_ba
  #include "third_party/blink/renderer/platform/wtf/functional.h"
  #include "third_party/blink/renderer/platform/wtf/text/format.h"
  #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-+#include "simprint/fingerprint/browser_fingerprint.h"
++#include "mz/fingerprint/browser_fingerprint.h"
  #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
  #include "third_party/skia/include/core/SkColorType.h"
  #include "third_party/skia/include/core/SkImage.h"
@@ -35,9 +35,9 @@ diff --git a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_ba
        return GetBooleanParameter(script_state, pname);
 -    case GL_SHADING_LANGUAGE_VERSION:
 +    case GL_SHADING_LANGUAGE_VERSION: {
-+      // Simprint: custom/random 模式一律返回与真实 Chrome 相同的固定字符串。
++      // MZ: custom/random 模式一律返回与真实 Chrome 相同的固定字符串。
 +      // 随机或异常的值（每次调用都变、或不是 Chrome 会产生的组合）本身就是指纹特征。
-+      std::string webgl_info_mode = simprint::fingerprint::BrowserFingerprint::GetConfiguredWebGLInfoMode();
++      std::string webgl_info_mode = mz::fingerprint::BrowserFingerprint::GetConfiguredWebGLInfoMode();
 +      if (webgl_info_mode == "custom" || webgl_info_mode == "random") {
 +        return WebGLAny(
 +            script_state,
@@ -68,8 +68,8 @@ diff --git a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_ba
 +      return WebGLAny(script_state, String("WebKit"));
 +    }
 +    case GL_VERSION: {
-+      // Simprint: 同上，固定为真实 Chrome 的值。
-+      std::string webgl_info_mode = simprint::fingerprint::BrowserFingerprint::GetConfiguredWebGLInfoMode();
++      // MZ: 同上，固定为真实 Chrome 的值。
++      std::string webgl_info_mode = mz::fingerprint::BrowserFingerprint::GetConfiguredWebGLInfoMode();
 +      if (webgl_info_mode == "custom" || webgl_info_mode == "random") {
 +        return WebGLAny(script_state,
 +                        String(IsWebGL2() ? "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
@@ -93,7 +93,7 @@ diff --git a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_ba
 -        return WebGLAny(script_state,
 -                        String(ContextGL()->GetString(GL_RENDERER)));
 +    case WebGLDebugRendererInfo::kUnmaskedRendererWebgl: {
-+      // Simprint: 无条件返回配置的 WebGL Renderer，不检查扩展是否启用
++      // MZ: 无条件返回配置的 WebGL Renderer，不检查扩展是否启用
 +      // 原因：browserscan 会在扩展加载前访问此参数，如果返回 null 并抛出 GL_INVALID_ENUM 会被标红
 +      // AdsPower 等商业指纹浏览器也是无条件返回，不检查扩展
 +
@@ -114,7 +114,7 @@ diff --git a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_ba
 -        return WebGLAny(script_state,
 -                        String(ContextGL()->GetString(GL_VENDOR)));
 +
-+      std::string configured_renderer = simprint::fingerprint::BrowserFingerprint::GetConfiguredWebGLRenderer();
++      std::string configured_renderer = mz::fingerprint::BrowserFingerprint::GetConfiguredWebGLRenderer();
 +      if (!configured_renderer.empty()) {
 +        return WebGLAny(script_state, String(configured_renderer.c_str()));
        }
@@ -126,7 +126,7 @@ diff --git a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_ba
 +                      String(ContextGL()->GetString(GL_RENDERER)));
 +    }
 +    case WebGLDebugRendererInfo::kUnmaskedVendorWebgl: {
-+      // Simprint: 无条件返回配置的 WebGL Vendor，不检查扩展是否启用
++      // MZ: 无条件返回配置的 WebGL Vendor，不检查扩展是否启用
 +      // 原因：browserscan 会在扩展加载前访问此参数，如果返回 null 并抛出 GL_INVALID_ENUM 会被标红
 +      // AdsPower 等商业指纹浏览器也是无条件返回，不检查扩展
 +
@@ -138,7 +138,7 @@ diff --git a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_ba
 +        base::PlatformThread::Sleep(base::Microseconds(100));
 +      }
 +
-+      std::string configured_vendor = simprint::fingerprint::BrowserFingerprint::GetConfiguredWebGLVendor();
++      std::string configured_vendor = mz::fingerprint::BrowserFingerprint::GetConfiguredWebGLVendor();
 +      if (!configured_vendor.empty()) {
 +        return WebGLAny(script_state, String(configured_vendor.c_str()));
 +      }
@@ -157,7 +157,7 @@ diff --git a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_ba
 +    // beyond the buffer size that ValidateReadPixelsFuncParameters() checked.
 +    if (data && width > 0 && height > 0 && format == GL_RGBA &&
 +        type == GL_UNSIGNED_BYTE) {
-+      simprint::fingerprint::BrowserFingerprint::ApplyWebGLImageNoise(
++      mz::fingerprint::BrowserFingerprint::ApplyWebGLImageNoise(
 +          data, static_cast<size_t>(buffer_size.ValueOrDie()));
 +    }
    }

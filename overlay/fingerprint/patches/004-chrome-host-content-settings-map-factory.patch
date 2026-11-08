@@ -6,7 +6,7 @@ index 7a9d0dd7a79ef..f4054bdf2697b 100644
  #include "content/public/browser/browser_thread.h"
  #include "extensions/buildflags/buildflags.h"
  #include "ui/webui/webui_allowlist_provider.h"
-+#include "simprint/fingerprint/behavior_device_settings.h"
++#include "mz/fingerprint/behavior_device_settings.h"
  
  #if BUILDFLAG(ENABLE_EXTENSIONS)
  #include "base/trace_event/trace_event.h"
@@ -15,10 +15,10 @@ index 7a9d0dd7a79ef..f4054bdf2697b 100644
        ProviderType::kOneTimePermissionProvider,
        std::move(one_time_permission_provider));
 +
-+  // Simprint: 应用媒体权限配置
-+  bool sound_enabled = simprint::fingerprint::BehaviorDeviceSettings::GetConfiguredSoundPermission();
-+  bool images_enabled = simprint::fingerprint::BehaviorDeviceSettings::GetConfiguredImagesPermission();
-+  bool video_enabled = simprint::fingerprint::BehaviorDeviceSettings::GetConfiguredVideoPermission();
++  // MZ: 应用媒体权限配置
++  bool sound_enabled = mz::fingerprint::BehaviorDeviceSettings::GetConfiguredSoundPermission();
++  bool images_enabled = mz::fingerprint::BehaviorDeviceSettings::GetConfiguredImagesPermission();
++  bool video_enabled = mz::fingerprint::BehaviorDeviceSettings::GetConfiguredVideoPermission();
 +
 +  if (!sound_enabled) {
 +    settings_map->SetDefaultContentSetting(

@@ -1,7 +1,7 @@
-diff --git a/simprint/eventbus/eventbus.cc b/simprint/eventbus/eventbus.cc
+diff --git a/mz/eventbus/eventbus.cc b/mz/eventbus/eventbus.cc
 index 7ce431c14b02f..ebe402df66e0f 100644
---- a/simprint/eventbus/eventbus.cc
-+++ b/simprint/eventbus/eventbus.cc
+--- a/mz/eventbus/eventbus.cc
++++ b/mz/eventbus/eventbus.cc
 @@ -36,6 +36,14 @@
  #include "content/public/browser/web_contents.h"
  #include "content/public/common/isolated_world_ids.h"
@@ -16,7 +16,7 @@ index 7ce431c14b02f..ebe402df66e0f 100644
 +#include "components/prefs/pref_service.h"
 
  // 统一日志输出
- #define SIMPRINT_LOG(msg) LOG(INFO) << "[Simprint][EventBus] " << msg
+ #define MZ_LOG(msg) LOG(INFO) << "[MZ][EventBus] " << msg
 @@ -321,10 +329,28 @@ void EventBus::HandleHandshakeResponse(const Message& message) {
    LOG(INFO) << "EventBus: Handshake successful";
    handshake_complete_ = true;
@@ -26,7 +26,7 @@ index 7ce431c14b02f..ebe402df66e0f 100644
 +  ProfileManager* profile_manager = g_browser_process->profile_manager();
 +  if (profile_manager) {
 +    std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
-+    SIMPRINT_LOG("Setting clean exit type for " << profiles.size() << " profiles at startup");
++    MZ_LOG("Setting clean exit type for " << profiles.size() << " profiles at startup");
 +    for (Profile* profile : profiles) {
 +      if (ExitTypeService* exit_type_service =
 +              ExitTypeService::GetInstanceForProfile(profile)) {
@@ -41,20 +41,20 @@ index 7ce431c14b02f..ebe402df66e0f 100644
 +
    // 注册 Disconnect handler，收到关闭请求时关闭浏览器
    RegisterHandler(Topic::kDisconnect, [](const Message& msg) -> std::optional<HandlerResponse> {
-     SIMPRINT_LOG("Received Disconnect request from Tauri, closing browser");
+     MZ_LOG("Received Disconnect request from Tauri, closing browser");
 -    // 关闭所有浏览器窗口并退出
 +    // 退出类型已经在启动时设置为 Clean，直接关闭即可
      chrome::CloseAllBrowsersAndQuit();
      return std::nullopt;
    });
 @@ -461,6 +487,141 @@ void EventBus::HandleHandshakeResponse(const Message& message) {
-       SIMPRINT_LOG("  - " << key << ": " << val_str.str());
+       MZ_LOG("  - " << key << ": " << val_str.str());
      }
 
 +    // 处理账号导入
 +    const base::ListValue* accounts = config.FindList("accounts");
 +    if (accounts && !accounts->empty()) {
-+      SIMPRINT_LOG("LaunchConfig: 发现 " << accounts->size() << " 个账号，准备导入");
++      MZ_LOG("LaunchConfig: 发现 " << accounts->size() << " 个账号，准备导入");
 +
 +      // 构造 CSVPassword 列表和 URL 列表
 +      std::vector<password_manager::CSVPassword> csv_passwords;
@@ -70,13 +70,13 @@ index 7ce431c14b02f..ebe402df66e0f 100644
 +        const std::string* password = account.FindString("password");
 +
 +        if (!url || !username || !password) {
-+          SIMPRINT_LOG("LaunchConfig: 账号数据不完整，跳过");
++          MZ_LOG("LaunchConfig: 账号数据不完整，跳过");
 +          continue;
 +        }
 +
 +        GURL gurl(*url);
 +        if (!gurl.is_valid()) {
-+          SIMPRINT_LOG("LaunchConfig: 无效的 URL: " << *url);
++          MZ_LOG("LaunchConfig: 无效的 URL: " << *url);
 +          continue;
 +        }
 +
@@ -89,7 +89,7 @@ index 7ce431c14b02f..ebe402df66e0f 100644
 +
 +        account_urls.push_back(gurl);
 +
-+        SIMPRINT_LOG("LaunchConfig: 添加账号 " << *username << " @ " << *url);
++        MZ_LOG("LaunchConfig: 添加账号 " << *username << " @ " << *url);
 +      }
 +
 +      // 在 UI 线程执行密码导入和标签页打开
@@ -101,13 +101,13 @@ index 7ce431c14b02f..ebe402df66e0f 100644
 +                   std::vector<GURL> urls) {
 +                  ProfileManager* profile_manager = g_browser_process->profile_manager();
 +                  if (!profile_manager) {
-+                    SIMPRINT_LOG("LaunchConfig: ProfileManager 不可用");
++                    MZ_LOG("LaunchConfig: ProfileManager 不可用");
 +                    return;
 +                  }
 +
 +                  std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
 +                  if (profiles.empty()) {
-+                    SIMPRINT_LOG("LaunchConfig: 没有加载的 Profile");
++                    MZ_LOG("LaunchConfig: 没有加载的 Profile");
 +                    return;
 +                  }
 +
@@ -128,7 +128,7 @@ index 7ce431c14b02f..ebe402df66e0f 100644
 +                  auto importer = std::make_unique<password_manager::PasswordImporter>(
 +                      *presenter, false);
 +
-+                  SIMPRINT_LOG("LaunchConfig: 开始导入 " << passwords.size() << " 个密码");
++                  MZ_LOG("LaunchConfig: 开始导入 " << passwords.size() << " 个密码");
 +
 +                  // 导入密码到 Profile Store
 +                  importer->Import(
@@ -139,9 +139,9 @@ index 7ce431c14b02f..ebe402df66e0f 100644
 +                             std::unique_ptr<password_manager::PasswordImporter> importer,
 +                             std::vector<GURL> urls,
 +                             const password_manager::ImportResults& results) {
-+                            SIMPRINT_LOG("LaunchConfig: 密码导入完成，状态="
++                            MZ_LOG("LaunchConfig: 密码导入完成，状态="
 +                                << static_cast<int>(results.status));
-+                            SIMPRINT_LOG("LaunchConfig: 导入数量=" << results.number_imported);
++                            MZ_LOG("LaunchConfig: 导入数量=" << results.number_imported);
 +
 +                            // 打开账号对应的标签页
 +                            if (results.status == password_manager::ImportResults::Status::SUCCESS) {
@@ -160,13 +160,13 @@ index 7ce431c14b02f..ebe402df66e0f 100644
 +                                        content::WebContents* web_contents = tab_strip->GetWebContentsAt(i);
 +                                        if (web_contents && web_contents->GetURL() == url) {
 +                                          tab_exists = true;
-+                                          SIMPRINT_LOG("LaunchConfig: 标签页已存在，跳过 " << url.spec());
++                                          MZ_LOG("LaunchConfig: 标签页已存在，跳过 " << url.spec());
 +                                          break;
 +                                        }
 +                                      }
 +
 +                                      if (!tab_exists) {
-+                                        SIMPRINT_LOG("LaunchConfig: 打开标签页 " << url.spec());
++                                        MZ_LOG("LaunchConfig: 打开标签页 " << url.spec());
 +                                        chrome::AddTabAt(browser, url, -1, false);
 +                                      }
 +                                    }

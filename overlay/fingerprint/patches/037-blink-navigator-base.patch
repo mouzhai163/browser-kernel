@@ -14,8 +14,8 @@ index 0910e68f91b90..65b680d6e40c6 100644
  #include "third_party/blink/renderer/core/geolocation/geolocation.h"
  #include "third_party/blink/renderer/core/probe/core_probes.h"
  #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-+#include "simprint/fingerprint/screen_hardware_fingerprint.h"
-+#include "simprint/fingerprint/network_location_fingerprint.h"
++#include "mz/fingerprint/screen_hardware_fingerprint.h"
++#include "mz/fingerprint/network_location_fingerprint.h"
  
  #if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
  #include <sys/utsname.h>
@@ -23,14 +23,14 @@ index 0910e68f91b90..65b680d6e40c6 100644
      : NavigatorLanguage(context), ExecutionContextClient(context) {}
  
  String NavigatorBase::userAgent() const {
-+  // Simprint: 检查是否有指纹配置的 UserAgent
-+  std::string configured_ua = simprint::fingerprint::NetworkLocationFingerprint::GetConfiguredUserAgent();
++  // MZ: 检查是否有指纹配置的 UserAgent
++  std::string configured_ua = mz::fingerprint::NetworkLocationFingerprint::GetConfiguredUserAgent();
 +  if (!configured_ua.empty()) {
 +    // 直接返回配置的 UA（已经在配置层简化过了）
 +    return String::FromUtf8(configured_ua);
 +  }
 +
-+  // Simprint: 如果没有配置 UA，返回 ExecutionContext 的 UA
++  // MZ: 如果没有配置 UA，返回 ExecutionContext 的 UA
    ExecutionContext* execution_context = GetExecutionContext();
    return execution_context ? execution_context->UserAgent() : String();
  }
@@ -38,8 +38,8 @@ index 0910e68f91b90..65b680d6e40c6 100644
  }
  
  unsigned int NavigatorBase::hardwareConcurrency() const {
-+  // Simprint: 应用硬件并发数指纹
-+  int configured_concurrency = simprint::fingerprint::ScreenHardwareFingerprint::GetConfiguredHardwareConcurrency();
++  // MZ: 应用硬件并发数指纹
++  int configured_concurrency = mz::fingerprint::ScreenHardwareFingerprint::GetConfiguredHardwareConcurrency();
 +  if (configured_concurrency > 0) {
 +    return static_cast<unsigned int>(configured_concurrency);
 +  }

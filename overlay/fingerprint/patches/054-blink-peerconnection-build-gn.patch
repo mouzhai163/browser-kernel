@@ -6,7 +6,7 @@ index f4c4410182f08..258169b1e1472 100644
      "//third_party/blink/renderer/modules/mediastream",
      "//third_party/blink/renderer/modules/permissions",
      "//third_party/blink/renderer/modules/webrtc",
-+    "//simprint/fingerprint",
++    "//mz/fingerprint",
    ]
  
    allow_circular_includes_from =

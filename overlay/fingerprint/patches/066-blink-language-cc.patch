@@ -5,7 +5,7 @@ diff --git a/third_party/blink/renderer/platform/language.cc b/third_party/blink
  #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
  #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
  #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
-+#include "simprint/config/fingerprint_config_storage.h"
++#include "mz/config/fingerprint_config_storage.h"
  
  namespace blink {
  
@@ -62,19 +62,19 @@ diff --git a/third_party/blink/renderer/platform/language.cc b/third_party/blink
 -  if (!override.empty())
 -    return override[0];
 -  return PlatformLanguage();
-+  // Simprint: 优先使用指纹配置的语言
-+  std::string configured_language = simprint::config::GetLanguage();
-+  LOG(INFO) << "[Simprint Language] DefaultLanguage - configured_language: " << configured_language;
++  // MZ: 优先使用指纹配置的语言
++  std::string configured_language = mz::config::GetLanguage();
++  LOG(INFO) << "[MZ Language] DefaultLanguage - configured_language: " << configured_language;
 +
 +  if (!configured_language.empty()) {
 +    AtomicString result = AtomicString(String::FromUtf8(configured_language));
-+    LOG(INFO) << "[Simprint Language] DefaultLanguage returning configured: " << result;
++    LOG(INFO) << "[MZ Language] DefaultLanguage returning configured: " << result;
 +    return result;
 +  }
 +
-+  // Simprint: 如果配置为空，等待配置加载，暂时返回 en-US 作为默认值
++  // MZ: 如果配置为空，等待配置加载，暂时返回 en-US 作为默认值
 +  // 避免使用 PlatformLanguage() 因为它是静态缓存的系统语言
-+  LOG(INFO) << "[Simprint Language] DefaultLanguage - config not loaded yet, returning default en-US";
++  LOG(INFO) << "[MZ Language] DefaultLanguage - config not loaded yet, returning default en-US";
 +  return AtomicString("en-US");
  }
  
@@ -82,23 +82,23 @@ diff --git a/third_party/blink/renderer/platform/language.cc b/third_party/blink
 -  Vector<AtomicString>& override = PreferredLanguagesOverride();
 -  if (!override.empty())
 -    return override;
-+  // Simprint: 优先使用指纹配置的语言
-+  std::string configured_language = simprint::config::GetLanguage();
-+  LOG(INFO) << "[Simprint Language] UserPreferredLanguages - configured_language: " << configured_language;
++  // MZ: 优先使用指纹配置的语言
++  std::string configured_language = mz::config::GetLanguage();
++  LOG(INFO) << "[MZ Language] UserPreferredLanguages - configured_language: " << configured_language;
  
 +  if (!configured_language.empty()) {
 +    Vector<AtomicString> languages;
 +    languages.ReserveInitialCapacity(1);
-+    for (const std::string& language : simprint::config::GetLanguageList()) {
++    for (const std::string& language : mz::config::GetLanguageList()) {
 +      languages.push_back(AtomicString(String::FromUtf8(language)));
 +    }
-+    LOG(INFO) << "[Simprint Language] UserPreferredLanguages returning configured: " << languages[0];
++    LOG(INFO) << "[MZ Language] UserPreferredLanguages returning configured: " << languages[0];
 +    return languages;
 +  }
 +
-+  // Simprint: 如果配置为空，等待配置加载，暂时返回 en-US 作为默认值
++  // MZ: 如果配置为空，等待配置加载，暂时返回 en-US 作为默认值
 +  // 避免使用 PlatformLanguage() 因为它是静态缓存的系统语言
-+  LOG(INFO) << "[Simprint Language] UserPreferredLanguages - config not loaded yet, returning default en-US";
++  LOG(INFO) << "[MZ Language] UserPreferredLanguages - config not loaded yet, returning default en-US";
    Vector<AtomicString> languages;
    languages.ReserveInitialCapacity(1);
 -  languages.push_back(PlatformLanguage());

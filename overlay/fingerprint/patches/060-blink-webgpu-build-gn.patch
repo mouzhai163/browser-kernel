@@ -6,7 +6,7 @@ index 90b629c55940c..0be7a451577d7 100644
    deps = [
      "//gpu/command_buffer/client:webgpu_interface",
      "//services/metrics/public/cpp:ukm_builders",
-+    "//simprint/fingerprint",
++    "//mz/fingerprint",
      "//skia",
      "//skia:skcms",
      "//third_party/blink/renderer/modules/webcodecs",

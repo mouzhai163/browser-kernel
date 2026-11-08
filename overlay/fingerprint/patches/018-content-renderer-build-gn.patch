@@ -6,7 +6,7 @@ index ee387002e8dbb..95cdf43eacd8f 100644
      "//media:media_buildflags",
      "//media/capture",
      "//media/gpu",
-+    "//simprint/config",
++    "//mz/config",
      "//media/gpu/ipc/common",
      "//media/midi",
      "//media/midi:mojo",
