@@ -139,7 +139,7 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
    metadata.architecture = GetCpuArchitecture();
    metadata.model = BuildModelInfo();
    metadata.form_factors = GetFormFactorsClientHint(metadata, metadata.mobile);
-@@ -696,5 +781,13 @@
+@@ -696,6 +781,14 @@
    metadata.bitness = GetCpuBitness();
    metadata.wow64 = IsWoW64();
    metadata.platform_version = GetPlatformVersion();
@@ -153,7 +153,7 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
 +  }
    return metadata;
  }
-
+ 
 @@ -855,6 +948,14 @@
  }
  

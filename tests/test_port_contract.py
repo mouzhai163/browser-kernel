@@ -25,9 +25,10 @@ class PortManifestTests(unittest.TestCase):
 
     def test_manifest_represents_a_single_chromium_branch(self) -> None:
         manifest = load_manifest(REPO_ROOT)
-        self.assertEqual(144, manifest.chromium_milestone)
+        # 每个分支对应一个 Chromium 版本：里程碑必须和 chromium_version 的主版本一致，不写死某个数字
+        self.assertEqual(int(manifest.chromium_version.split(".")[0]), manifest.chromium_milestone)
         self.assertEqual(1, manifest.core_api)
-        self.assertFalse((REPO_ROOT / "port" / "chromium-144").exists())
+        self.assertEqual([], sorted(p.name for p in (REPO_ROOT / "port").glob("chromium-*")))
 
     def test_dependency_resolution_is_topological(self) -> None:
         manifest = load_manifest(REPO_ROOT)
