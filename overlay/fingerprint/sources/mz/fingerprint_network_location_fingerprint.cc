@@ -82,6 +82,10 @@ void NetworkLocationFingerprint::ApplyWebRTC(const FingerprintConfig& config) {
 
 // static
 void NetworkLocationFingerprint::ApplyPlatform(const FingerprintConfig& config) {
+  if (config.platform_version.has_value()) {
+    mz::config::SetPlatformVersion(config.platform_version.value());
+    MZ_LOG("PlatformVersion 配置已应用: " << config.platform_version.value());
+  }
   if (!config.platform.has_value()) {
     MZ_LOG("Platform 配置未设置，跳过");
     return;

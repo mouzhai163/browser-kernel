@@ -139,7 +139,22 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
    metadata.architecture = GetCpuArchitecture();
    metadata.model = BuildModelInfo();
    metadata.form_factors = GetFormFactorsClientHint(metadata, metadata.mobile);
-@@ -855,6 +940,14 @@
+@@ -696,5 +781,13 @@
+   metadata.bitness = GetCpuBitness();
+   metadata.wow64 = IsWoW64();
+   metadata.platform_version = GetPlatformVersion();
++  {
++    // MZ: 配置的系统版本（Windows 10 为 10.0.0，Windows 11 为 13.0.0 及以上）；
++    // 没配置时用宿主机的真实版本。
++    std::string configured_platform_version = mz::config::GetPlatformVersion();
++    if (!configured_platform_version.empty()) {
++      metadata.platform_version = configured_platform_version;
++    }
++  }
+   return metadata;
+ }
+
+@@ -855,6 +948,14 @@
  }
  
  std::string BuildModelInfo() {

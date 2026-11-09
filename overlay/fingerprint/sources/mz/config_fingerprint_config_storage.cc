@@ -52,6 +52,11 @@ std::string& GetPlatformStorage() {
   return *storage;
 }
 
+std::string& GetPlatformVersionStorage() {
+  static base::NoDestructor<std::string> storage;
+  return *storage;
+}
+
 std::string& GetUserAgentStorage() {
   static base::NoDestructor<std::string> storage;
   return *storage;
@@ -307,6 +312,14 @@ void SetPlatform(const std::string& platform) {
 
 std::string GetPlatform() {
   return GetPlatformStorage();
+}
+
+void SetPlatformVersion(const std::string& platform_version) {
+  GetPlatformVersionStorage() = platform_version;
+}
+
+std::string GetPlatformVersion() {
+  return GetPlatformVersionStorage();
 }
 
 // 存储原始完整版本号（用于 Client Hints）
@@ -891,6 +904,7 @@ std::string ExportAllConfigAsJson() {
   json << "\"geolocation\":\"" << GetGeolocation() << "\",";
   json << "\"geolocation_prompt\":\"" << GetGeolocationPrompt() << "\",";
   json << "\"platform\":\"" << GetPlatform() << "\",";
+  json << "\"platform_version\":\"" << GetPlatformVersion() << "\",";
   json << "\"user_agent\":\"" << GetUserAgent() << "\",";
   json << "\"original_chrome_version\":\"" << GetOriginalChromeVersion() << "\",";
   json << "\"webrtc_mode\":\"" << GetWebRTCMode() << "\",";
@@ -1010,6 +1024,10 @@ void ImportAllConfigFromJson(const std::string& json) {
   if (const std::string* val = dict.FindString("platform")) {
     SetPlatform(*val);
     LOG(INFO) << "Imported platform: " << *val;
+  }
+  if (const std::string* val = dict.FindString("platform_version")) {
+    SetPlatformVersion(*val);
+    LOG(INFO) << "Imported platform_version: " << *val;
   }
   // MZ: 先导入原始版本号，再导入 user_agent
   // 这样可以避免 SetUserAgent() 从简化后的 UA 中提取错误的版本号

@@ -50,6 +50,7 @@ struct FingerprintConfig {
   std::optional<std::string> geolocation_prompt;
   std::optional<std::string> geolocation;
   std::optional<std::string> platform;
+  std::optional<std::string> platform_version;
   std::optional<std::string> user_agent;
 
   // === 浏览器行为 ===

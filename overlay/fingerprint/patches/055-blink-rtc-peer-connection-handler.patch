@@ -9,16 +9,19 @@ diff --git a/third_party/blink/renderer/modules/peerconnection/rtc_peer_connecti
  #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
  #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender_impl.h"
  #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver_impl.h"
-@@ -2004,6 +2005,25 @@
+@@ -2004,6 +2005,28 @@
      return;
    }
    TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceCandidateImpl");
 +
 +  // MZ: 检查是否需要过滤 ICE candidates
 +  std::string webrtc_mode = mz::fingerprint::NetworkLocationFingerprint::GetConfiguredWebRTCMode();
-+  // 默认拒绝：只有明确配置为 "real" 才放行。空值、"disable"、未实现的 "replace"、
-+  // 以及任何未知值都按"禁用"处理，避免配置缺失或写错时泄露真实 IP。
-+  if (webrtc_mode != "real") {
++  // 默认拒绝：只有 "real" 和 "replace" 放行。空值、"disable" 以及任何未知值都按"禁用"处理，
++  // 避免配置缺失或写错时泄露真实 IP。
++  // "replace"（仅走代理）：RTCPeerConnection 照常工作，真实 IP 的保护由浏览器进程里强制的
++  // disable_non_proxied_udp 策略保证（见 renderer_preferences_util 补丁）——不收集 host/srflx 候选，
++  // 只剩经代理的候选，所以这里不再另外过滤。
++  if (webrtc_mode != "real" && webrtc_mode != "replace") {
 +    if (webrtc_mode == "disable_non_proxied") {
 +      // 只允许 relay 类型的候选项（通过 TURN 服务器）
 +      std::string sdp_str = sdp.Utf8();

@@ -36,6 +36,8 @@ std::string GetGeolocationPrompt();
 
 void SetPlatform(const std::string& platform);
 std::string GetPlatform();
+void SetPlatformVersion(const std::string& platform_version);
+std::string GetPlatformVersion();
 
 // Per-environment seed for the noise generators (canvas/webgl/audio). Derived from the
 // environment id passed by the app (--mz-env-id); other processes receive it through

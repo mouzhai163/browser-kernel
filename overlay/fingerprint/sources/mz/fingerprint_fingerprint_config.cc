@@ -107,6 +107,25 @@ bool ValidateImportedConfig(std::string* error) {
     return fail("hardwareConcurrency 超出范围: " + base::NumberToString(cores));
   }
 
+  // 系统版本必须是 "主.次.补丁" 三段数字（如 10.0.0、15.0.0），写错了不如直接报错。
+  // 注意：这里读的是已经导入到存储里的值，所以和 platform_version 的 Apply 顺序无关。
+  const std::string platform_version = mz::config::GetPlatformVersion();
+  if (!platform_version.empty()) {
+    int dots = 0;
+    bool valid = platform_version.size() <= 16;
+    for (char c : platform_version) {
+      if (c == '.') {
+        ++dots;
+      } else if (c < '0' || c > '9') {
+        valid = false;
+      }
+    }
+    if (!valid || dots != 2 || platform_version.front() == '.' || platform_version.back() == '.' ||
+        platform_version.find("..") != std::string::npos) {
+      return fail("platform_version 无效: '" + platform_version + "'");
+    }
+  }
+
   // 未知的 WebRTC 模式会被内核按"禁用"处理，但配置本身写错了也应该让用户知道。
   const std::string webrtc = mz::config::GetWebRTCMode();
   if (!webrtc.empty() && webrtc != "real" && webrtc != "disable" &&
@@ -198,6 +217,8 @@ bool FingerprintConfigManager::ApplyConfigFromJson(const std::string& json_str) 
     config_.geolocation = *val;
   if (const std::string* val = dict.FindString("platform"))
     config_.platform = *val;
+  if (const std::string* val = dict.FindString("platform_version"))
+    config_.platform_version = *val;
   if (const std::string* val = dict.FindString("user_agent"))
     config_.user_agent = *val;
 
