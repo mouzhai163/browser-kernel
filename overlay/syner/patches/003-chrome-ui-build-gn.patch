@@ -1,7 +1,7 @@
 diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
-@@ -1688,6 +1688,7 @@
+@@ -932,6 +932,7 @@
      "//chrome/browser/search_provider_logos",
      "//chrome/browser/segmentation_platform",
      "//chrome/browser/sessions",
@@ -9,14 +9,14 @@ diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
      "//chrome/browser/sessions:impl",
      "//chrome/browser/signin",
      "//chrome/browser/signin:impl",
-@@ -3534,6 +3535,10 @@
-       "views/frame/browser_view.cc",
-       "views/frame/horizontal_tab_strip_region_view.cc",
-       "views/frame/horizontal_tab_strip_region_view.h",
+@@ -2746,6 +2747,10 @@
+       "views/frame/multi_contents_view.h",
+       "views/frame/picture_in_picture_browser_frame_view.cc",
+       "views/frame/picture_in_picture_browser_frame_view.h",
 +      "views/frame/sync_input_capture_handler.cc",
 +      "views/frame/sync_input_capture_handler.h",
 +      "views/frame/sync_input_replay.cc",
 +      "views/frame/sync_input_replay.h",
+       "views/frame/top_container_view.cc",
+       "views/frame/top_container_view.h",
        "views/frame/vertical_tab_strip_region_view.cc",
-       "views/frame/vertical_tab_strip_region_view.h",
-     ]

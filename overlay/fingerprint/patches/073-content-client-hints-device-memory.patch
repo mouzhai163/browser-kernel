@@ -9,9 +9,9 @@ diff --git a/content/browser/client_hints/client_hints.cc b/content/browser/clie
  
  #include <algorithm>
  #include <optional>
-@@ -241,8 +242,12 @@
+@@ -239,8 +240,12 @@
                             bool use_deprecated_version = false) {
-   CHECK(headers, base::NotFatalUntil::M160);
+   DCHECK(headers);
    blink::ApproximatedDeviceMemory::Initialize();
 +  // MZ: Device-Memory 请求头必须和 navigator.deviceMemory 一致（且最大 8）。
 +  const float configured_memory = mz::config::GetClampedDeviceMemory();
@@ -20,6 +20,6 @@ diff --git a/content/browser/client_hints/client_hints.cc b/content/browser/clie
 +      configured_memory > 0
 +          ? configured_memory
 +          : blink::ApproximatedDeviceMemory::GetApproximatedDeviceMemory();
-   CHECK_LT(0.0, device_memory, base::NotFatalUntil::M160);
+   DCHECK_LT(0.0, device_memory);
    SetHeaderToDouble(headers,
                      use_deprecated_version

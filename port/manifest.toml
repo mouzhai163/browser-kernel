@@ -2,8 +2,8 @@ schema_version = 1
 
 [port]
 name = "mz-chromium"
-chromium_version = "144.0.7559.118"
-chromium_milestone = 144
+chromium_version = "155.0.8059.86"
+chromium_milestone = 155
 core_api = 1
 
 # One branch represents one Chromium port. Do not add milestone directories

@@ -1,15 +1,15 @@
 diff --git a/third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.cc b/third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.cc
 --- a/third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.cc
 +++ b/third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.cc
-@@ -48,6 +48,7 @@
+@@ -45,6 +45,7 @@
+ #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
  #include "third_party/blink/renderer/modules/peerconnection/peer_connection_features.h"
  #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
- #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_tracer_impl.h"
 +#include "mz/fingerprint/network_location_fingerprint.h"
  #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
- #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender_impl.h"
- #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_transceiver_impl.h"
-@@ -2004,6 +2005,28 @@
+ #include "third_party/blink/renderer/modules/peerconnection/webrtc_set_description_observer.h"
+ #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
+@@ -2082,6 +2083,28 @@
      return;
    }
    TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceCandidateImpl");

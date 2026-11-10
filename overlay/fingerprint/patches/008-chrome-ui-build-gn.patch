@@ -1,7 +1,7 @@
 diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
-@@ -1689,6 +1689,7 @@
+@@ -933,6 +933,7 @@
      "//chrome/browser/segmentation_platform",
      "//chrome/browser/sessions",
      "//mz/eventbus",
