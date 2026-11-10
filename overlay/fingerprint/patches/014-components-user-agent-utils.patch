@@ -48,10 +48,10 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
 +  // MZ: 如果配置了自定义 User-Agent，使用原始完整版本号
 +  std::string configured_ua = mz::config::GetUserAgent();
 +  if (!configured_ua.empty()) {
-+    // 优先使用保存的原始完整版本号（而非从简化后的 UA 提取）
-+    // 完整版本一律使用内核的真实版本：配置里的版本号与真实内核对不上（构建号不存在或更低），
-+    // 与其他 Web API 行为不一致，反而是指纹特征。
-+    std::string original_version(version_info::GetVersionNumber());
++    // 完整版本：软件按环境选的同主版本真实发布版本（见 GetClientHintsFullVersion），
++    // 主版本对不上或没配置时用内核自己的版本号。
++    // 只在 Client Hints 里出现，UA 字符串本身仍是 主版本.0.0.0。
++    std::string original_version = mz::config::GetClientHintsFullVersion(std::string(version_info::GetVersionNumber()));
 +
 +    if (!original_version.empty()) {
 +      // 从原始版本号提取主版本号
@@ -116,10 +116,10 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
 +  // 这样可以实现：JavaScript UA 显示 144.0.0.0，Client Hints 显示 144.0.6477.96
 +  std::string configured_ua = mz::config::GetUserAgent();
 +  if (!configured_ua.empty()) {
-+    // 优先使用保存的原始完整版本号
-+    // 完整版本一律使用内核的真实版本：配置里的版本号与真实内核对不上（构建号不存在或更低），
-+    // 与其他 Web API 行为不一致，反而是指纹特征。
-+    std::string original_version(version_info::GetVersionNumber());
++    // 完整版本：软件按环境选的同主版本真实发布版本（见 GetClientHintsFullVersion），
++    // 主版本对不上或没配置时用内核自己的版本号。
++    // 与上面 brand_full_version_list 用的是同一个号码。
++    std::string original_version = mz::config::GetClientHintsFullVersion(std::string(version_info::GetVersionNumber()));
 +
 +    if (!original_version.empty()) {
 +      metadata.full_version = original_version;
