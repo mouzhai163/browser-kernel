@@ -1,0 +1,129 @@
+diff --git a/services/network/p2p/socket_udp.cc b/services/network/p2p/socket_udp.cc
+index 1eeec59581..822c9a42f6 100644
+--- a/services/network/p2p/socket_udp.cc
++++ b/services/network/p2p/socket_udp.cc
+@@ -243,6 +243,49 @@ void P2PSocketUdp::Init(
+   DCHECK((min_port == 0 && max_port == 0) || min_port > 0);
+   DCHECK_LE(min_port, max_port);
+ 
++  if (socks5_relay_context_) {
++    // MZ: 先和 SOCKS5 代理建立 UDP 转发，建好之后再绑定本地套接字并通知渲染进程
++    pending_init_ =
++        PendingInit{local_address, min_port, max_port, remote_address};
++    socks5_relay_ = std::make_unique<Socks5UdpRelay>(
++        socks5_relay_context_, network_anonymization_key, traffic_annotation_,
++        net_log_with_source_);
++    socks5_relay_->Start(
++        base::BindOnce(&P2PSocketUdp::OnSocks5UdpRelayReady,
++                       base::Unretained(this)),
++        base::BindOnce(&P2PSocketUdp::OnSocks5UdpRelayClosed,
++                       base::Unretained(this)));
++    return;
++  }
++  InitSocket(local_address, min_port, max_port, remote_address);
++}
++
++void P2PSocketUdp::EnableSocks5UdpRelay(net::URLRequestContext* context) {
++  DCHECK(!socket_);
++  socks5_relay_context_ = context;
++}
++
++void P2PSocketUdp::OnSocks5UdpRelayReady(int result) {
++  if (result != net::OK) {
++    LOG(ERROR) << "[MZ WebRTC] SOCKS5 UDP relay unavailable (" << result
++               << "); UDP socket closed without direct fallback.";
++    OnError();
++    return;
++  }
++  PendingInit init = std::move(*pending_init_);
++  pending_init_.reset();
++  InitSocket(init.local_address, init.min_port, init.max_port,
++             init.remote_address);
++}
++
++void P2PSocketUdp::OnSocks5UdpRelayClosed() {
++  OnError();
++}
++
++void P2PSocketUdp::InitSocket(const net::IPEndPoint& local_address,
++                              uint16_t min_port,
++                              uint16_t max_port,
++                              const P2PHostAndIPEndPoint& remote_address) {
+   socket_ = socket_factory_.Run(net_log());
+ 
+   int result = -1;
+@@ -358,7 +401,13 @@ void P2PSocketUdp::MaybeDrainReceivedPackets(bool force) {
+ 
+ bool P2PSocketUdp::HandleReadResult(int result) {
+   if (result > 0) {
+-    auto data = recv_buffer_->first(static_cast<size_t>(result));
++    base::span<uint8_t> data =
++        recv_buffer_->first(static_cast<size_t>(result));
++    // MZ: 经 SOCKS5 转发时只收代理转发地址来的包，去掉头，来源换成头里的真实对端
++    if (socks5_relay_ &&
++        !socks5_relay_->Unwrap(recv_address_, data, &data, &recv_address_)) {
++      return true;
++    }
+ 
+     if (!connected_peers_.contains(recv_address_)) {
+       P2PSocket::StunMessageType type;
+@@ -416,6 +465,13 @@ bool P2PSocketUdp::DoSend(P2PPendingPacket packet) {
+   int64_t send_time_us = webrtc::TimeMicros();
+   int64_t send_time_ms = send_time_us / 1000;
+ 
++  if (!socket_) {
++    // MZ: SOCKS5 转发还没建好（渲染进程不该在 SocketCreated 之前发）：丢弃但照常回执
++    send_completions_.emplace_back(packet.id, packet.packet_options.packet_id,
++                                   send_time_ms);
++    return true;
++  }
++
+   if (base::FeatureList::IsEnabled(kEnforceP2PSocketPortRestrictions)) {
+     if (!net::IsPortAllowedForScheme(packet.to.port(), "stun")) {
+       // Drop the packet without destroying the socket. The renderer expects
+@@ -480,16 +536,32 @@ bool P2PSocketUdp::DoSendToSocket(const P2PPendingPacket& packet,
+       &P2PSocketUdp::OnSend, base::Unretained(this), packet.id,
+       packet.packet_options.packet_id, send_time_ms);
+ 
++  // MZ: 经 SOCKS5 转发时，数据前加 UDP 头，统一发给代理的转发地址
++  scoped_refptr<net::IOBuffer> send_data = packet.data;
++  int send_size = static_cast<int>(packet.size);
++  net::IPEndPoint send_to = packet.to;
++  if (socks5_relay_) {
++    if (!socks5_relay_->ready()) {
++      OnError();
++      return false;
++    }
++    scoped_refptr<net::IOBufferWithSize> wrapped =
++        socks5_relay_->Wrap(packet.to, packet.data->first(packet.size));
++    send_size = wrapped->size();
++    send_data = std::move(wrapped);
++    send_to = socks5_relay_->relay_endpoint();
++  }
++
+   // TODO(crbug.com/40489281): Pass traffic annotation after
+   // DatagramSocketServer is updated.
+-  int result = socket_->SendTo(packet.data.get(), packet.size, packet.to,
++  int result = socket_->SendTo(send_data.get(), send_size, send_to,
+                                base::BindOnce(callback_binding));
+ 
+   // sendto() may return an error, e.g. if we've received an ICMP Destination
+   // Unreachable message. When this happens try sending the same packet again,
+   // and just drop it if it fails again.
+   if (IsTransientError(result)) {
+-    result = socket_->SendTo(packet.data.get(), packet.size, packet.to,
++    result = socket_->SendTo(send_data.get(), send_size, send_to,
+                              std::move(callback_binding));
+   }
+ 
+@@ -675,6 +747,10 @@ void P2PSocketUdp::SendFromInterceptor(const P2PPendingPacket& packet) {
+ }
+ 
+ void P2PSocketUdp::SetOption(P2PSocketOption option, int32_t value) {
++  if (!socket_) {
++    // MZ: SOCKS5 转发建好之前还没有本地套接字
++    return;
++  }
+   switch (option) {
+     case P2P_SOCKET_OPT_RCVBUF:
+       socket_->SetReceiveBufferSize(value);

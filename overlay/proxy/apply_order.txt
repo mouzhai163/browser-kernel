@@ -22,3 +22,9 @@
 018-services-network-service-h.patch
 019-services-network-context-mojom.patch
 020-services-network-service-mojom.patch
+021-services-network-p2p-socket-udp-h.patch
+022-services-network-p2p-socket-udp-cc.patch
+023-services-network-p2p-socket-manager.patch
+024-services-network-build-gn.patch
+025-blink-platform-p2p-port-allocator.patch
+026-chrome-content-browser-client-webrtc-udp-relay.patch
