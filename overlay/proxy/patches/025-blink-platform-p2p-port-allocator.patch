@@ -1,0 +1,33 @@
+diff --git a/third_party/blink/renderer/platform/p2p/port_allocator.cc b/third_party/blink/renderer/platform/p2p/port_allocator.cc
+index 1da016bb58..73c234fc71 100644
+--- a/third_party/blink/renderer/platform/p2p/port_allocator.cc
++++ b/third_party/blink/renderer/platform/p2p/port_allocator.cc
+@@ -4,6 +4,8 @@
+ 
+ #include "third_party/blink/renderer/platform/p2p/port_allocator.h"
+ 
++#include "base/command_line.h"
++
+ #include <stdint.h>
+ 
+ #include <memory>
+@@ -40,9 +42,16 @@ P2PPortAllocator::P2PPortAllocator(
+     flags |= webrtc::PORTALLOCATOR_DISABLE_DEFAULT_LOCAL_CANDIDATE;
+   }
+   if (!config_.enable_nonproxied_udp) {
+-    flags |= webrtc::PORTALLOCATOR_DISABLE_UDP |
+-             webrtc::PORTALLOCATOR_DISABLE_STUN |
+-             webrtc::PORTALLOCATOR_DISABLE_UDP_RELAY;
++    if (base::CommandLine::ForCurrentProcess()->HasSwitch("mz-webrtc-udp-relay")) {
++      // MZ: 网络服务会把 UDP 全部经 SOCKS5 代理转发，所以 UDP/STUN 可以放开，
++      // srflx 候选就是代理出口 IP。仍然不枚举网卡、不给默认本地候选，局域网 IP 不出现
++      flags |= webrtc::PORTALLOCATOR_DISABLE_ADAPTER_ENUMERATION |
++               webrtc::PORTALLOCATOR_DISABLE_DEFAULT_LOCAL_CANDIDATE;
++    } else {
++      flags |= webrtc::PORTALLOCATOR_DISABLE_UDP |
++               webrtc::PORTALLOCATOR_DISABLE_STUN |
++               webrtc::PORTALLOCATOR_DISABLE_UDP_RELAY;
++    }
+   }
+   set_flags(flags);
+   set_allow_tcp_listen(false);

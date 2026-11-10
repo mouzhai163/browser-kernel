@@ -1,0 +1,26 @@
+diff --git a/services/network/p2p/socket_manager.cc b/services/network/p2p/socket_manager.cc
+index 3a814c12d1..37731d7f8a 100644
+--- a/services/network/p2p/socket_manager.cc
++++ b/services/network/p2p/socket_manager.cc
+@@ -32,6 +32,8 @@
+ #include "net/url_request/url_request_context.h"
+ #include "net/url_request/url_request_context_getter.h"
+ #include "services/network/p2p/socket.h"
++#include "services/network/p2p/socket_udp.h"
++#include "services/network/p2p/socks5_udp_relay.h"
+ #include "services/network/proxy_resolving_client_socket_factory.h"
+ #include "services/network/public/cpp/p2p_param_traits.h"
+ #include "third_party/webrtc/media/base/rtp_utils.h"
+@@ -449,6 +451,12 @@ void P2PSocketManager::CreateSocket(
+   if (!socket)
+     return;
+ 
++  // MZ: 软件确认代理支持 UDP 时，WebRTC 的 UDP 全部经 SOCKS5 UDP ASSOCIATE 转发
++  if (type == P2P_SOCKET_UDP && Socks5UdpRelay::IsEnabled()) {
++    static_cast<P2PSocketUdp*>(socket.get())
++        ->EnableSocks5UdpRelay(url_request_context_);
++  }
++
+   P2PSocket* socket_ptr = socket.get();
+   sockets_[socket_ptr] = std::move(socket);
+ 

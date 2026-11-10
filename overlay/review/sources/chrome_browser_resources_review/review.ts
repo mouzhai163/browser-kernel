@@ -63,6 +63,7 @@ async function loadData() {
     };
 
     fillFingerprintData(data);
+    fillWebRtc(data.webrtc, data.ip);
   } catch (error) {
     console.error('Failed to load data:', error);
     // 显示错误状态，不使用 mock 数据
@@ -186,6 +187,61 @@ function fillFingerprintData(data: any) {
   // 更新页面标题
   if (data.env_name) {
     document.title = data.env_name;
+  }
+}
+
+// WebRTC：经 STUN 拿到的公网 IP（srflx 候选），和上面的出口 IP 比对。
+// “替换”模式下内核把 WebRTC 的 UDP 经 SOCKS5 代理转发，这里应当和出口 IP 一致；
+// 代理不支持 UDP（或是 HTTP 代理）时没有公网候选，真实 IP 也不会出现
+async function stunPublicIps(): Promise<string[]> {
+  const pc = new RTCPeerConnection({
+    iceServers: [{urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478']}],
+  });
+  try {
+    pc.createDataChannel('mz-review');
+    const gathered = new Promise<void>(resolve => {
+      pc.onicegatheringstatechange = () => {
+        if (pc.iceGatheringState === 'complete') resolve();
+      };
+      setTimeout(resolve, 8000);
+    });
+    await pc.setLocalDescription(await pc.createOffer());
+    await gathered;
+    const ips = new Set<string>();
+    (await pc.getStats()).forEach((stat: {type?: string, candidateType?: string, address?: string}) => {
+      if (stat.type === 'local-candidate' && stat.candidateType === 'srflx' && stat.address) {
+        ips.add(stat.address);
+      }
+    });
+    return [...ips];
+  } finally {
+    pc.close();
+  }
+}
+
+async function fillWebRtc(mode: string | null, exitIp: string | null) {
+  const el = document.getElementById('env-webrtc');
+  if (!el) return;
+  const show = (text: string, color?: string) => {
+    el.textContent = text;
+    el.style.color = color || '';
+    el.classList.remove('skeleton', 'skeleton-text');
+  };
+  if (mode === 'disable') {
+    show('已禁用');
+    return;
+  }
+  try {
+    const ips = await stunPublicIps();
+    if (ips.length === 0) {
+      show(mode === 'replace' ? '无公网 IP（代理不转发 UDP，未泄露真实 IP）' : '未获取到公网 IP');
+    } else if (exitIp && ips.every(ip => ip === exitIp)) {
+      show(`${ips.join(', ')}（与出口 IP 一致）`, '#16a34a');
+    } else {
+      show(`${ips.join(', ')}（与出口 IP 不一致）`, '#dc2626');
+    }
+  } catch (error) {
+    show('检测失败');
   }
 }
 

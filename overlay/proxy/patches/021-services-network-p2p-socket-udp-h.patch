@@ -1,0 +1,68 @@
+diff --git a/services/network/p2p/socket_udp.h b/services/network/p2p/socket_udp.h
+index 6cd46c4693..8f6de4bce0 100644
+--- a/services/network/p2p/socket_udp.h
++++ b/services/network/p2p/socket_udp.h
+@@ -9,6 +9,7 @@
+ #include <stdint.h>
+ 
+ #include <memory>
++#include <optional>
+ #include <set>
+ #include <vector>
+ 
+@@ -27,12 +28,14 @@
+ #include "net/socket/udp_server_socket.h"
+ #include "net/traffic_annotation/network_traffic_annotation.h"
+ #include "services/network/p2p/socket.h"
++#include "services/network/p2p/socks5_udp_relay.h"
+ #include "services/network/public/cpp/p2p_socket_type.h"
+ #include "services/network/throttling/scoped_throttling_token.h"
+ #include "third_party/webrtc/rtc_base/async_packet_socket.h"
+ 
+ namespace net {
+ class NetLog;
++class URLRequestContext;
+ }  // namespace net
+ 
+ namespace network {
+@@ -106,6 +109,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
+   void SendBatch(std::vector<mojom::P2PSendPacketPtr> packet_batch) override;
+   void SetOption(P2PSocketOption option, int32_t value) override;
+ 
++  // MZ: 所有 UDP 都经 SOCKS5 UDP ASSOCIATE 转发（--mz-webrtc-udp-relay）。必须在 Init() 之前调用。
++  void EnableSocks5UdpRelay(net::URLRequestContext* context);
++
+  private:
+   friend class P2PSocketUdpTest;
+ 
+@@ -113,6 +119,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
+ 
+   bool SendPacket(base::span<const uint8_t> data,
+                   const P2PPacketInfo& packet_info);
++  void InitSocket(const net::IPEndPoint& local_address,
++                  uint16_t min_port,
++                  uint16_t max_port,
++                  const P2PHostAndIPEndPoint& remote_address);
++  void OnSocks5UdpRelayReady(int result);
++  void OnSocks5UdpRelayClosed();
+   void DoRead();
+   void OnRecv(int result);
+   void MaybeDrainReceivedPackets(bool force);
+@@ -202,6 +214,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
+   // The number of consecutive retries for a packet.  Retries stop after
+   // `kMaxSendRetries`.
+   int send_retry_count_ = 0;
++
++  // MZ: SOCKS5 UDP 转发；建好之前不绑定本地套接字，失败就报错，绝不直连
++  raw_ptr<net::URLRequestContext> socks5_relay_context_ = nullptr;
++  std::unique_ptr<Socks5UdpRelay> socks5_relay_;
++  struct PendingInit {
++    net::IPEndPoint local_address;
++    uint16_t min_port = 0;
++    uint16_t max_port = 0;
++    P2PHostAndIPEndPoint remote_address;
++  };
++  std::optional<PendingInit> pending_init_;
+ };
+ 
+ }  // namespace network
