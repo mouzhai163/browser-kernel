@@ -1,0 +1,14 @@
+diff --git a/chrome/browser/chrome_content_browser_client.cc b/chrome/browser/chrome_content_browser_client.cc
+--- a/chrome/browser/chrome_content_browser_client.cc
++++ b/chrome/browser/chrome_content_browser_client.cc
+@@ -2956,6 +2956,10 @@
+     base::CommandLine* command_line,
+     int child_process_id) {
+   crash_keys::AppendStringAnnotationsCommandLineSwitch(command_line);
++  // MZ: WebRTC UDP 经 SOCKS5 转发的开关要同时到网络服务（转发）和渲染进程（放开 UDP）
++  if (base::CommandLine::ForCurrentProcess()->HasSwitch("mz-webrtc-udp-relay")) {
++    command_line->AppendSwitch("mz-webrtc-udp-relay");
++  }
+ #if BUILDFLAG(IS_MAC)
+   std::unique_ptr<metrics::ClientInfo> client_info =
+       GoogleUpdateSettings::LoadMetricsClientInfo();
