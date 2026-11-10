@@ -2,16 +2,17 @@ diff --git a/content/renderer/render_thread_impl.cc b/content/renderer/render_th
 index b76a57dbaa209..08126bcaec1a0 100644
 --- a/content/renderer/render_thread_impl.cc
 +++ b/content/renderer/render_thread_impl.cc
-@@ -45,6 +45,8 @@
+@@ -45,6 +45,9 @@
  #include "base/strings/to_string.h"
  #include "base/strings/utf_string_conversions.h"
  #include "base/synchronization/waitable_event.h"
 +#include "mz/config/fingerprint_config_storage.h"
 +#include "base/i18n/rtl.h"
++#include "third_party/icu/source/common/unicode/locid.h"
  #include "base/task/bind_post_task.h"
  #include "base/task/sequenced_task_runner.h"
  #include "base/task/single_thread_task_runner.h"
-@@ -845,7 +846,8 @@ void RenderThreadImpl::InitializeRenderer(
+@@ -845,7 +847,8 @@ void RenderThreadImpl::InitializeRenderer(
      const std::vector<std::string>& cors_exempt_header_list,
      blink::mojom::OriginTrialsSettingsPtr origin_trials_settings,
      blink::mojom::PerformanceTier cpu_performance_tier,
@@ -21,7 +22,7 @@ index b76a57dbaa209..08126bcaec1a0 100644
    TRACE_EVENT("navigation", "RenderThreadImpl::InitializeRenderer",
                perfetto::TerminatingFlow::Global(trace_id));
    DCHECK(user_agent_.IsNull());
-@@ -856,6 +858,32 @@ void RenderThreadImpl::InitializeRenderer(
+@@ -856,6 +859,36 @@ void RenderThreadImpl::InitializeRenderer(
    cors_exempt_header_list_ = cors_exempt_header_list;
    cpu_performance_tier_ = cpu_performance_tier;
  
@@ -45,7 +46,11 @@ index b76a57dbaa209..08126bcaec1a0 100644
 +    // 让 ICU（Intl.*、Date#toString、toLocaleString）跟随配置的语言，而不是系统区域设置：
 +    // 否则脚本能通过 Intl 默认 locale 读到真实的系统语言（例如 de-DE）。
 +    if (!imported_language.empty()) {
-+      base::i18n::SetICUDefaultLocale(imported_language);
++      // Chromium 158 restricts base::i18n::SetDefaultIcuLocale to a few pass-key callers, so set the
++      // ICU default locale directly (this is what the old SetICUDefaultLocale did).
++      UErrorCode icu_status = U_ZERO_ERROR;
++      icu::Locale::setDefault(
++          icu::Locale::forLanguageTag(imported_language.c_str(), icu_status), icu_status);
 +    }
 +  } else {
 +    LOG(WARNING) << "[MZ Config] RenderThreadImpl::InitializeRenderer() - Config is empty!";

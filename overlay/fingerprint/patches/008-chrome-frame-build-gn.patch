@@ -1,0 +1,11 @@
+diff --git a/chrome/browser/ui/views/frame/BUILD.gn b/chrome/browser/ui/views/frame/BUILD.gn
+--- a/chrome/browser/ui/views/frame/BUILD.gn
++++ b/chrome/browser/ui/views/frame/BUILD.gn
+@@ -1025,6 +1025,7 @@
+       "//chrome/browser/taskbar",
+       "//chrome/browser/win:jumplist",
+       "//mz/eventbus",
++      "//mz/fingerprint",
+       "//ui/native_theme",
+     ]
+   }

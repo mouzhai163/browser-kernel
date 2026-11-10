@@ -10,7 +10,7 @@
 005-chrome-geolocation-permission-context-delegate.patch
 006-chrome-profile-network-context-service-cc.patch
 007-chrome-profile-network-context-service-h.patch
-008-chrome-ui-build-gn.patch
+008-chrome-frame-build-gn.patch
 009-chrome-sync-input-capture-handler.patch
 010-chrome-sync-input-replay.patch
 011-chrome-window-sizer-build-gn.patch

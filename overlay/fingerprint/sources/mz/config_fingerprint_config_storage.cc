@@ -345,10 +345,13 @@ void SetUserAgent(const std::string& user_agent) {
     std::string build_version = match[4].str(); // 例如 "6477"
     std::string patch_version = match[5].str(); // 例如 "96"
 
-    // 保存原始完整版本号（用于 Client Hints）
+    // 保存原始完整版本号（用于 Client Hints）。精简后的 UA（主版本.0.0.0）里没有完整版本，
+    // 这时保留已导入的 original_chrome_version（软件按环境选的真实版本），不能用 X.0.0.0 覆盖它
     std::string original_full_version = major_version + "." + minor_version + "." +
                                        build_version + "." + patch_version;
-    GetOriginalChromeVersionStorage() = original_full_version;
+    if (build_version != "0") {
+      GetOriginalChromeVersionStorage() = original_full_version;
+    }
 
     // 简化 UA 字符串中的版本号
     std::string simplified_version = browser_name + "/" + major_version + ".0.0.0";
@@ -369,6 +372,26 @@ std::string GetUserAgent() {
 
 std::string GetOriginalChromeVersion() {
   return GetOriginalChromeVersionStorage();
+}
+
+std::string GetClientHintsFullVersion(const std::string& kernel_version) {
+  const std::string configured = GetOriginalChromeVersionStorage();
+  static const std::regex kFullVersion(R"((\d+)\.0\.(\d+)\.(\d+))");
+  std::smatch configured_parts;
+  // 构建号为 0 的是精简后的 UA 版本（主版本.0.0.0），不是真实的完整版本
+  if (!std::regex_match(configured, configured_parts, kFullVersion) ||
+      configured_parts[2].str() == "0") {
+    return kernel_version;
+  }
+  const size_t dot = kernel_version.find('.');
+  const std::string kernel_major =
+      dot == std::string::npos ? kernel_version : kernel_version.substr(0, dot);
+  if (configured_parts[1].str() != kernel_major) {
+    LOG(WARNING) << "Ignoring configured full version " << configured
+                 << " for kernel " << kernel_version;
+    return kernel_version;
+  }
+  return configured;
 }
 
 std::string GetChromeVersionFromUserAgent() {

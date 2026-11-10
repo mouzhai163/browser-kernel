@@ -62,6 +62,12 @@ std::string GetUserAgent();
 // 获取原始完整版本号（用于 Client Hints）
 std::string GetOriginalChromeVersion();
 
+// Client Hints 报的完整版本号（fullVersionList / uaFullVersion / Sec-CH-UA-Full-Version-List）。
+// 软件按环境从 Google 真实发布过的 Windows 版本里选一个同主版本的号码传进来
+// （original_chrome_version），格式是 "主版本.0.构建号.补丁号"、且主版本与内核一致时才采用；
+// 否则用内核自己的版本号 kernel_version，不报主版本对不上的号码。
+std::string GetClientHintsFullVersion(const std::string& kernel_version);
+
 // 从 User-Agent 中提取 Chrome 版本号（例如从 "Chrome/124.0.6367.60" 提取 "124.0.6367.60"）
 std::string GetChromeVersionFromUserAgent();
 

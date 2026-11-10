@@ -4,7 +4,7 @@
 
 001-chrome-browser-build-gn.patch
 002-chrome-browser-main.patch
-003-chrome-ui-build-gn.patch
+003-chrome-frame-build-gn.patch
 004-browser-view-cc.patch
 005-browser-view-h.patch
 006-chrome-views-delegate-cc.patch

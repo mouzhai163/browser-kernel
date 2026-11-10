@@ -1,0 +1,24 @@
+diff --git a/chrome/browser/ui/views/frame/BUILD.gn b/chrome/browser/ui/views/frame/BUILD.gn
+--- a/chrome/browser/ui/views/frame/BUILD.gn
++++ b/chrome/browser/ui/views/frame/BUILD.gn
+@@ -751,5 +751,11 @@
+ 
+ source_set("browser_view") {
+-  sources = [ "browser_view.cc" ]
++  sources = [
++    "browser_view.cc",
++    "sync_input_capture_handler.cc",
++    "sync_input_capture_handler.h",
++    "sync_input_replay.cc",
++    "sync_input_replay.h",
++  ]
+   public_deps = [ ":browser_view_header" ]
+   deps = [
+@@ -1019,6 +1025,7 @@
+     deps += [
+       "//chrome/browser/taskbar",
+       "//chrome/browser/win:jumplist",
++      "//mz/eventbus",
+       "//ui/native_theme",
+     ]
+   }
