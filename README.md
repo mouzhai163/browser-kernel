@@ -1,6 +1,6 @@
 <div align="center">
   <h1>MZ Browser Kernel</h1>
-  <p>Patch pipeline, overlay modules, and release preparation layer for M Z指纹浏览器 Chromium builds.</p>
+  <p>Patch pipeline, overlay modules, and release preparation layer for MZ指纹浏览器 Chromium builds.</p>
   <p>
     <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-3776ab?style=flat-square&labelColor=0f172a" />
     <img alt="Package Manager uv" src="https://img.shields.io/badge/package%20manager-uv-22c55e?style=flat-square&labelColor=0f172a" />
@@ -15,9 +15,9 @@
 
 ## Introduction
 
-MZ Browser Kernel is the browser-kernel layer used to customize Chromium for M Z指纹浏览器. It does not ship Chromium source code itself. Instead, it provides the patch flow, overlay modules, resource deployment logic, and release preparation steps that are applied onto a separately managed Chromium source tree.
+MZ Browser Kernel is the browser-kernel layer used to customize Chromium for MZ指纹浏览器. It does not ship Chromium source code itself. Instead, it provides the patch flow, overlay modules, resource deployment logic, and release preparation steps that are applied onto a separately managed Chromium source tree.
 
-This repository exists to keep Chromium-facing customization isolated from the desktop client and runtime repositories. By moving branding, patch orchestration, and browser-side feature overlays into a dedicated repository, M Z指纹浏览器 can evolve its browser kernel more explicitly and maintain upstream upgrades with clearer boundaries.
+This repository exists to keep Chromium-facing customization isolated from the desktop client and runtime repositories. By moving branding, patch orchestration, and browser-side feature overlays into a dedicated repository, MZ指纹浏览器 can evolve its browser kernel more explicitly and maintain upstream upgrades with clearer boundaries.
 
 ## Why MZ Browser Kernel?
 
@@ -27,7 +27,7 @@ MZ Browser Kernel is intended to make that layer more disciplined. It keeps the 
 
 ## Features
 
-- **External Chromium workflow**: Keep Chromium source code outside this repository and apply M Z指纹浏览器-specific changes onto a separately managed source tree.
+- **External Chromium workflow**: Keep Chromium source code outside this repository and apply MZ指纹浏览器-specific changes onto a separately managed source tree.
 - **Driver-based pipeline**: Use `python -m driver` commands to run `apply`, `deploy`, `build`, or combined preparation flows in a fixed order.
 - **Overlay modules**: Organize browser customizations into units such as `branding`, `ntp`, `syner`, `auth`, `fingerprint`, `review`, `account`, `proxy`, and `cookie`.
 - **Patch and resource deployment**: Support both source patching and follow-up deployment work such as copying assets or syncing build arguments.
@@ -78,9 +78,9 @@ If you apply these overlays to a different Chromium revision, patch conflicts, s
 
 ## Status
 
-MZ Browser Kernel is being prepared as part of the broader M Z指纹浏览器 open-source refactoring effort.
+MZ Browser Kernel is being prepared as part of the broader MZ指纹浏览器 open-source refactoring effort.
 
-The repository is already used to manage M Z指纹浏览器-specific Chromium customization, but its structure, documentation, and release-facing conventions are still being cleaned up for long-term external collaboration.
+The repository is already used to manage MZ指纹浏览器-specific Chromium customization, but its structure, documentation, and release-facing conventions are still being cleaned up for long-term external collaboration.
 
 ## Contributing
 
@@ -96,12 +96,10 @@ High-value contribution areas currently include:
 
 ## Origin and credits
 
-This repository is a derivative of [simprint-browser-kernel](https://github.com/Simprint/simprint-browser-kernel) by the Simprint team, the Chromium kernel layer of [Simprint](https://github.com/Simprint/simprint), and is maintained independently as the kernel of M Z指纹浏览器. Thanks to the original project for open-sourcing it.
+This repository is a derivative of [simprint-browser-kernel](https://github.com/Simprint/simprint-browser-kernel) by the Simprint team, the Chromium kernel layer of [Simprint](https://github.com/Simprint/simprint), and is maintained independently as the kernel of MZ指纹浏览器. Thanks to the original project for open-sourcing it.
 
 Changes on top of the original: Chromium 156 port with hardened fingerprints, a full rename (flags, executable, pipe names, branding) and a new icon. The original project's name and trademarks are not part of this project; the original AGPL-3.0 license and the existing copyright notices in the source files are kept.
 
 ## License
 
 This project is licensed under the GNU Affero General Public License v3.0 (AGPLv3).
-
-If you want to use MZ Browser Kernel in a way that does not comply with the AGPLv3 obligations, including distributing modified versions or providing modified versions as a closed-source service, please contact us for a commercial license.
