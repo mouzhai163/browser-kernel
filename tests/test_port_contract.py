@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -11,7 +12,12 @@ from driver.contract import (
     resolve_capabilities,
     validate_port,
 )
-from driver.patching import normalize_unified_diff
+from driver.patching import (
+    PatchFormatError,
+    normalize_unified_diff,
+    parse_hunks,
+    verify_hunks_applied,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -78,6 +84,53 @@ class PatchSafetyTests(unittest.TestCase):
             " \n",
             normalized,
         )
+
+    def test_rejects_hunk_longer_than_its_header(self) -> None:
+        # GNU patch skips the text after the declared length and any later hunk.
+        raw = (
+            "diff --git a/a.cc b/a.cc\n--- a/a.cc\n+++ b/a.cc\n"
+            "@@ -1,1 +1,2 @@\n one\n+two\n three\n"
+            "@@ -9,1 +10,2 @@\n nine\n+ten\n"
+        )
+        with self.assertRaises(PatchFormatError):
+            parse_hunks(raw)
+
+    def test_rejects_truncated_hunk(self) -> None:
+        raw = "--- a/a.cc\n+++ b/a.cc\n@@ -1,3 +1,3 @@\n one\n"
+        with self.assertRaises(PatchFormatError):
+            parse_hunks(raw)
+
+    def test_parses_every_hunk(self) -> None:
+        raw = (
+            "diff --git a/a.cc b/a.cc\n--- a/a.cc\n+++ b/a.cc\n"
+            "@@ -1,1 +1,2 @@\n one\n+two\n"
+            "@@ -9,1 +10,2 @@\n nine\n+ten\n"
+        )
+        self.assertEqual(["a.cc", "a.cc"], [h.target for h in parse_hunks(raw)])
+
+    def test_verify_reports_missing_hunk(self) -> None:
+        raw = (
+            "--- a/a.cc\n+++ b/a.cc\n"
+            "@@ -1,1 +1,2 @@\n one\n+two\n"
+            "@@ -9,1 +10,2 @@\n nine\n+ten\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "a.cc").write_text("one\ntwo\nnine\n", encoding="utf-8")
+            problems = verify_hunks_applied(root, parse_hunks(raw))
+            self.assertEqual(1, len(problems))
+            self.assertIn("'ten'", problems[0])
+            (root / "a.cc").write_text("one\ntwo\nnine\nten\n", encoding="utf-8")
+            self.assertEqual([], verify_hunks_applied(root, parse_hunks(raw)))
+
+    def test_verify_checks_pure_deletion(self) -> None:
+        raw = "--- a/a.cc\n+++ b/a.cc\n@@ -1,3 +1,2 @@\n one\n-two\n three\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "a.cc").write_text("one\ntwo\nthree\n", encoding="utf-8")
+            self.assertEqual(1, len(verify_hunks_applied(root, parse_hunks(raw))))
+            (root / "a.cc").write_text("one\nthree\n", encoding="utf-8")
+            self.assertEqual([], verify_hunks_applied(root, parse_hunks(raw)))
 
     def test_rejects_parent_traversal(self) -> None:
         _, errors = _patch_targets_from_text(

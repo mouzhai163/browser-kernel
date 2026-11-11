@@ -12,6 +12,7 @@ overlay/branding/branding.config
 
 # Local / test
 *-rendered.patch
+apply-failures.json
 
 # IDE / OS
 .idea/

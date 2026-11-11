@@ -14,13 +14,13 @@ index 7ce431c14b02f..ebe402df66e0f 100644
 +#include "chrome/browser/affiliations/affiliation_service_factory.h"
 +#include "chrome/browser/sessions/exit_type_service.h"
 +#include "components/prefs/pref_service.h"
-
+ 
  // 统一日志输出
  #define MZ_LOG(msg) LOG(INFO) << "[MZ][EventBus] " << msg
 @@ -321,10 +329,28 @@ void EventBus::HandleHandshakeResponse(const Message& message) {
    LOG(INFO) << "EventBus: Handshake successful";
    handshake_complete_ = true;
-
+ 
 +  // 立即将退出类型设置为 Clean，避免下次启动时提示恢复页面
 +  // 这样即使浏览器异常退出，退出类型也已经是 Clean 了
 +  ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -47,10 +47,10 @@ index 7ce431c14b02f..ebe402df66e0f 100644
      chrome::CloseAllBrowsersAndQuit();
      return std::nullopt;
    });
-@@ -461,6 +487,141 @@ void EventBus::HandleHandshakeResponse(const Message& message) {
+@@ -461,6 +487,139 @@ void EventBus::HandleHandshakeResponse(const Message& message) {
        MZ_LOG("  - " << key << ": " << val_str.str());
      }
-
+ 
 +    // 处理账号导入
 +    const base::ListValue* accounts = config.FindList("accounts");
 +    if (accounts && !accounts->empty()) {
@@ -76,7 +76,7 @@ index 7ce431c14b02f..ebe402df66e0f 100644
 +
 +        GURL gurl(*url);
 +        if (!gurl.is_valid()) {
-+          MZ_LOG("LaunchConfig: 无效的 URL: " << *url);
++          MZ_LOG("LaunchConfig: 账号 URL 无效，跳过");
 +          continue;
 +        }
 +
@@ -88,8 +88,6 @@ index 7ce431c14b02f..ebe402df66e0f 100644
 +            password_manager::CSVPassword::Status::kOK);
 +
 +        account_urls.push_back(gurl);
-+
-+        MZ_LOG("LaunchConfig: 添加账号 " << *username << " @ " << *url);
 +      }
 +
 +      // 在 UI 线程执行密码导入和标签页打开

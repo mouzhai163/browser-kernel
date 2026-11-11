@@ -54,7 +54,7 @@ diff --git a/third_party/blink/renderer/platform/language.cc b/third_party/blink
  
  void OverrideUserPreferredLanguagesForTesting(
      const Vector<AtomicString>& override) {
-@@ -92,20 +62,43 @@
+@@ -92,20 +62,37 @@
  }
  
  AtomicString DefaultLanguage() {
@@ -64,17 +64,14 @@ diff --git a/third_party/blink/renderer/platform/language.cc b/third_party/blink
 -  return PlatformLanguage();
 +  // MZ: 优先使用指纹配置的语言
 +  std::string configured_language = mz::config::GetLanguage();
-+  LOG(INFO) << "[MZ Language] DefaultLanguage - configured_language: " << configured_language;
 +
 +  if (!configured_language.empty()) {
 +    AtomicString result = AtomicString(String::FromUtf8(configured_language));
-+    LOG(INFO) << "[MZ Language] DefaultLanguage returning configured: " << result;
 +    return result;
 +  }
 +
 +  // MZ: 如果配置为空，等待配置加载，暂时返回 en-US 作为默认值
 +  // 避免使用 PlatformLanguage() 因为它是静态缓存的系统语言
-+  LOG(INFO) << "[MZ Language] DefaultLanguage - config not loaded yet, returning default en-US";
 +  return AtomicString("en-US");
  }
  
@@ -84,7 +81,6 @@ diff --git a/third_party/blink/renderer/platform/language.cc b/third_party/blink
 -    return override;
 +  // MZ: 优先使用指纹配置的语言
 +  std::string configured_language = mz::config::GetLanguage();
-+  LOG(INFO) << "[MZ Language] UserPreferredLanguages - configured_language: " << configured_language;
  
 +  if (!configured_language.empty()) {
 +    Vector<AtomicString> languages;
@@ -92,13 +88,11 @@ diff --git a/third_party/blink/renderer/platform/language.cc b/third_party/blink
 +    for (const std::string& language : mz::config::GetLanguageList()) {
 +      languages.push_back(AtomicString(String::FromUtf8(language)));
 +    }
-+    LOG(INFO) << "[MZ Language] UserPreferredLanguages returning configured: " << languages[0];
 +    return languages;
 +  }
 +
 +  // MZ: 如果配置为空，等待配置加载，暂时返回 en-US 作为默认值
 +  // 避免使用 PlatformLanguage() 因为它是静态缓存的系统语言
-+  LOG(INFO) << "[MZ Language] UserPreferredLanguages - config not loaded yet, returning default en-US";
    Vector<AtomicString> languages;
    languages.ReserveInitialCapacity(1);
 -  languages.push_back(PlatformLanguage());

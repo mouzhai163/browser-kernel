@@ -227,7 +227,8 @@ void GetWindowPosition(int* x, int* y);
 std::string ExportAllConfigAsJson();
 
 // 从 JSON 字符串导入所有配置，用于 Renderer 进程接收配置
-void ImportAllConfigFromJson(const std::string& json);
+// Returns false when `json` is empty or malformed; nothing is imported then.
+bool ImportAllConfigFromJson(const std::string& json);
 
 }  // namespace config
 }  // namespace mz

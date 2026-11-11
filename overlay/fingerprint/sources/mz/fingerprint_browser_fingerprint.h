@@ -81,6 +81,10 @@ class BrowserFingerprint {
   // 获取配置的 MediaDevices 模式
   static std::string GetConfiguredMediaDevicesMode();
 
+  // 占位媒体设备的 deviceId / groupId：64 位十六进制串，由环境种子、来源和 name 决定。
+  static std::string GetPlaceholderMediaDeviceId(const std::string& name,
+                                                 const std::string& origin);
+
   // 判断是否应该过滤媒体设备
   // 返回 true 表示应该隐藏该设备
   static bool ShouldFilterMediaDevice(const std::string& device_type);

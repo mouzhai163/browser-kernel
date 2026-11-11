@@ -4,6 +4,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from .patching import record_failure
+
 
 def _read_order(repo_root: Path) -> list[str]:
     order_file = repo_root / "driver" / "order.txt"
@@ -61,4 +63,4 @@ def run_phase(
             env=env,
         )
         if r.returncode != 0:
-            raise SystemExit(f"Unit {name} {phase} failed (exit {r.returncode})")
+            record_failure(f"{name} {phase}", f"unit exited with {r.returncode}")

@@ -194,7 +194,10 @@ bool FingerprintConfigManager::ApplyConfigFromJson(const std::string& json_str) 
   MZ_LOG("开始解析指纹配置...");
 
   // 首先导入配置到全局存储（供 Font Access API 等使用）
-  mz::config::ImportAllConfigFromJson(json_str);
+  if (!mz::config::ImportAllConfigFromJson(json_str)) {
+    MZ_LOG("错误: 无法解析 JSON 配置");
+    return false;
+  }
 
   auto value = base::JSONReader::Read(json_str, base::JSON_PARSE_RFC);
   if (!value || !value->is_dict()) {

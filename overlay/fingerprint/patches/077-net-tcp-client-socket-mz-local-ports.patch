@@ -1,0 +1,35 @@
+diff --git a/net/socket/tcp_client_socket.cc b/net/socket/tcp_client_socket.cc
+--- a/net/socket/tcp_client_socket.cc
++++ b/net/socket/tcp_client_socket.cc
+@@ -228,6 +228,20 @@ int TCPClientSocket::DoConnectLoop(int result) {
+   return rv;
+ }
+ 
++namespace {
++
++// MZ: 软件在本机监听的端口（环境的调试端口段、MCP 服务）。网页能连上就能认出这是 MZ 浏览器，
++// 这里按端口没开处理，和连接被拒绝时完全一样。
++bool IsMzLocalServiceEndpoint(const IPEndPoint& endpoint) {
++  if (!endpoint.address().IsLoopback()) {
++    return false;
++  }
++  const uint16_t port = endpoint.port();
++  return (port >= 29200 && port <= 29499) || port == 37110;
++}
++
++}  // namespace
++
+ int TCPClientSocket::DoConnect() {
+   DCHECK_GE(current_address_index_, 0);
+   DCHECK_LT(current_address_index_, static_cast<int>(addresses_.size()));
+@@ -245,6 +259,10 @@ int TCPClientSocket::DoConnect() {
+     return ERR_UNSAFE_PORT;
+   }
+ 
++  if (IsMzLocalServiceEndpoint(endpoint)) {
++    return ERR_CONNECTION_REFUSED;
++  }
++
+   if (!socket_->IsValid()) {
+     int result = OpenSocket(endpoint.GetFamily());
+     if (result != OK)
