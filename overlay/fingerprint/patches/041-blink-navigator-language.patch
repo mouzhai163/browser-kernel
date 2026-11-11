@@ -1,7 +1,7 @@
 diff --git a/third_party/blink/renderer/core/frame/navigator_language.cc b/third_party/blink/renderer/core/frame/navigator_language.cc
 --- a/third_party/blink/renderer/core/frame/navigator_language.cc
 +++ b/third_party/blink/renderer/core/frame/navigator_language.cc
-@@ -11,6 +11,8 @@
+@@ -8,6 +8,8 @@
  #include "third_party/blink/renderer/core/probe/core_probes.h"
  #include "third_party/blink/renderer/platform/language.h"
  #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -10,14 +10,13 @@ diff --git a/third_party/blink/renderer/core/frame/navigator_language.cc b/third
  
  namespace blink {
  
-@@ -69,6 +71,22 @@
+@@ -66,6 +68,20 @@
  }
  
  void NavigatorLanguage::EnsureUpdatedLanguage() {
 +  // MZ: 检查是否有指纹配置的语言
 +  std::string configured_language =
 +      mz::fingerprint::NetworkLocationFingerprint::GetConfiguredLanguage();
-+  LOG(INFO) << "[MZ Language] NavigatorLanguage::EnsureUpdatedLanguage - configured_language: " << configured_language;
 +  if (!configured_language.empty()) {
 +    // 与 Accept-Language 头保持一致（例如 ["en-US", "en"]），而不是只放一个。
 +    std::string language_list;
@@ -26,7 +25,6 @@ diff --git a/third_party/blink/renderer/core/frame/navigator_language.cc b/third
 +    }
 +    languages_ = ParseAndSanitize(String::FromUtf8(language_list));
 +    languages_dirty_ = false;
-+    LOG(INFO) << "[MZ Language] NavigatorLanguage::EnsureUpdatedLanguage - set languages_ to: " << configured_language;
 +    return;
 +  }
 +

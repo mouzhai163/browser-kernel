@@ -13,7 +13,13 @@ KERNEL_ROOT = PROJECT_ROOT.parent.parent
 if str(KERNEL_ROOT) not in sys.path:
     sys.path.insert(0, str(KERNEL_ROOT))
 
-from driver.patching import read_normalized_patch  # noqa: E402
+from driver.patching import (  # noqa: E402
+    PatchError,
+    apply_patch_data,
+    normalize_unified_diff,
+    read_normalized_patch,
+    record_failure,
+)
 
 
 def _chromium_src() -> Path:
@@ -121,27 +127,13 @@ def apply_() -> None:
             rendered = "\n".join(out_lines)
             if not rendered.endswith("\n"):
                 rendered += "\n"
-            r = subprocess.run(
-                ["patch", "--batch", "--forward", "-p1"],
-                cwd=chromium_src,
-                input=rendered.encode("utf-8"),
-                capture_output=True,
-            )
+            data = normalize_unified_diff(rendered).encode("utf-8")
         else:
-            r = subprocess.run(
-                ["patch", "--batch", "--forward", "-p1"],
-                cwd=chromium_src,
-                input=read_normalized_patch(patch_file),
-                capture_output=True,
-            )
-        if r.returncode != 0:
-            out = r.stdout.decode("utf-8", errors="replace")
-            if out:
-                print(out, file=sys.stderr)
-            err = r.stderr.decode("utf-8", errors="replace")
-            if err:
-                print(err, file=sys.stderr)
-            raise SystemExit(f"patch failed: {patch_file} (exit {r.returncode})")
+            data = read_normalized_patch(patch_file)
+        try:
+            apply_patch_data(chromium_src, data)
+        except PatchError as exc:
+            record_failure(f"overlay/branding/{name}", str(exc))
 
 
 def _run_script(name: str, chromium_src: Path, kernel_root: Path) -> None:

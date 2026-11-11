@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 
 #include <sstream>
 
@@ -117,14 +118,25 @@ std::string NetworkLocationFingerprint::GetConfiguredTimezone() {
 }
 
 // static
-std::string NetworkLocationFingerprint::GetConfiguredPlatform() {
-  return mz::config::GetPlatform();
+std::string NetworkLocationFingerprint::GetConfiguredNavigatorPlatform() {
+  // 配置里存的是操作系统名（Windows / macOS / Linux，与 Sec-CH-UA-Platform 相同），
+  // navigator.platform 用的是另一套取值。
+  const std::string platform = base::ToLowerASCII(mz::config::GetPlatform());
+  if (platform == "windows" || platform == "win32") {
+    return "Win32";
+  }
+  if (platform == "macos" || platform == "mac" || platform == "macintel") {
+    return "MacIntel";
+  }
+  if (platform == "linux" || platform == "linux x86_64") {
+    return "Linux x86_64";
+  }
+  return std::string();
 }
 
 // static
 std::string NetworkLocationFingerprint::GetConfiguredUserAgent() {
   std::string ua = mz::config::GetUserAgent();
-  LOG(INFO) << "GetConfiguredUserAgent() called, returning: '" << ua << "' (length: " << ua.length() << ")";
   return ua;
 }
 

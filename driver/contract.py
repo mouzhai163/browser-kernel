@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Iterable
 
-from .patching import normalize_unified_diff
+from .patching import PatchFormatError, normalize_unified_diff, parse_hunks
 
 
 PATCH_HEADER = re.compile(r"^diff --git a/(\S+) b/(\S+)$", re.MULTILINE)
@@ -149,6 +149,10 @@ def _validate_patch_syntax(repo_root: Path, patch_file: Path) -> str | None:
     patch_text = normalize_unified_diff(
         patch_file.read_text(encoding="utf-8", errors="strict")
     )
+    try:
+        parse_hunks(patch_text)
+    except PatchFormatError as exc:
+        return f"{relative}: {exc}"
     result = subprocess.run(
         ["git", "apply", "--recount", "--numstat", "-"],
         cwd=repo_root,
@@ -256,6 +260,13 @@ def validate_port(repo_root: Path, check_patch_syntax: bool = True) -> Validatio
 
         for name in ordered_names:
             patch_file = patches_dir / name
+            if patch_file.is_file() and name.endswith(".patch.j2"):
+                try:
+                    parse_hunks(
+                        normalize_unified_diff(patch_file.read_text(encoding="utf-8"))
+                    )
+                except PatchFormatError as exc:
+                    errors.append(f"{patch_file.relative_to(repo_root)}: {exc}")
             if not patch_file.is_file() or patch_file.suffix != ".patch":
                 continue
             patch_count += 1

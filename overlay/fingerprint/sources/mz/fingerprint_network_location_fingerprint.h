@@ -39,7 +39,8 @@ class NetworkLocationFingerprint {
   static std::string GetConfiguredTimezone();
 
   // 获取当前配置的 platform（用于 navigator.platform）
-  static std::string GetConfiguredPlatform();
+  // navigator.platform 的值（Win32 / MacIntel / Linux x86_64）；没有配置时返回空串。
+  static std::string GetConfiguredNavigatorPlatform();
 
   // 获取当前配置的 UserAgent（用于 navigator.userAgent）
   static std::string GetConfiguredUserAgent();

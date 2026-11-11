@@ -1,8 +1,7 @@
 diff --git a/net/base/port_util.cc b/net/base/port_util.cc
-index 49d0f744cc890..5c63a5aa7b6ae 100644
 --- a/net/base/port_util.cc
 +++ b/net/base/port_util.cc
-@@ -22,6 +22,7 @@
+@@ -23,6 +23,7 @@
  #include "net/base/ip_endpoint.h"
  #include "net/base/parse_number.h"
  #include "url/url_constants.h"
@@ -10,13 +9,12 @@ index 49d0f744cc890..5c63a5aa7b6ae 100644
  
  namespace net {
  
-@@ -169,6 +170,12 @@ bool IsPortAllowedForScheme(int port, std::string_view url_scheme) {
+@@ -181,6 +182,11 @@
    if (!IsPortValid(port))
      return false;
  
 +  // MZ: 检查端口扫描防护配置
 +  if (mz::config::ShouldBlockPort(port)) {
-+    LOG(INFO) << "[MZ] Port " << port << " blocked by port scan protection";
 +    return false;
 +  }
 +

@@ -1,7 +1,7 @@
 diff --git a/third_party/blink/renderer/core/loader/frame_fetch_context.cc b/third_party/blink/renderer/core/loader/frame_fetch_context.cc
 --- a/third_party/blink/renderer/core/loader/frame_fetch_context.cc
 +++ b/third_party/blink/renderer/core/loader/frame_fetch_context.cc
-@@ -102,6 +102,7 @@
+@@ -100,6 +100,7 @@
  #include "third_party/blink/renderer/core/loader/resource_initiator_helper.h"
  #include "third_party/blink/renderer/core/loader/resource_load_observer_for_frame.h"
  #include "third_party/blink/renderer/core/loader/subresource_filter.h"
@@ -9,7 +9,7 @@ diff --git a/third_party/blink/renderer/core/loader/frame_fetch_context.cc b/thi
  #include "third_party/blink/renderer/core/page/page.h"
  #include "third_party/blink/renderer/core/paint/timing/first_meaningful_paint_detector.h"
  #include "third_party/blink/renderer/core/probe/core_probes.h"
-@@ -674,7 +675,9 @@
+@@ -672,7 +673,9 @@
      request.SetHttpHeaderField(
          http_names::kDeviceMemory_DEPRECATED,
          AtomicString(String::Number(
@@ -20,7 +20,7 @@ diff --git a/third_party/blink/renderer/core/loader/frame_fetch_context.cc b/thi
    }
  
    if (ShouldSendClientHint(*policy, resource_origin,
-@@ -683,7 +686,9 @@
+@@ -681,7 +684,9 @@
      request.SetHttpHeaderField(
          http_names::kDeviceMemory,
          AtomicString(String::Number(
@@ -31,7 +31,7 @@ diff --git a/third_party/blink/renderer/core/loader/frame_fetch_context.cc b/thi
    }
  
    if (ShouldSendClientHint(*policy, resource_origin,
-@@ -1357,6 +1362,19 @@
+@@ -1349,6 +1354,16 @@
    }
    LocalFrame* frame = document_->GetFrame();
    DCHECK(frame);
@@ -39,12 +39,9 @@ diff --git a/third_party/blink/renderer/core/loader/frame_fetch_context.cc b/thi
 +  // Check mz configuration first
 +  std::string mz_language = mz::config::GetLanguage();
 +  if (!mz_language.empty()) {
-+    LOG(INFO) << "[MZ Language] FrameFetchContext::GetReducedAcceptLanguage - using mz config: " << mz_language;
 +    String language_str = String::FromUtf8(mz_language.c_str());
 +    String expanded_language = network_utils::ExpandLanguageList(language_str);
-+    LOG(INFO) << "[MZ Language] FrameFetchContext::GetReducedAcceptLanguage - ExpandLanguageList returned: " << expanded_language;
 +    String result = network_utils::GenerateAcceptLanguageHeader(expanded_language);
-+    LOG(INFO) << "[MZ Language] FrameFetchContext::GetReducedAcceptLanguage - GenerateAcceptLanguageHeader returned: " << result;
 +    return result;
 +  }
 +

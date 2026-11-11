@@ -7,6 +7,8 @@
 #include "mz/fingerprint/fingerprint_seed.h"
 #include "mz/config/fingerprint_config_storage.h"
 #include "base/containers/span.h"
+#include "base/hash/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 
@@ -436,6 +438,17 @@ std::string BrowserFingerprint::GetConfiguredMediaDevicesMode() {
 }
 
 // static
+std::string BrowserFingerprint::GetPlaceholderMediaDeviceId(
+    const std::string& name,
+    const std::string& origin) {
+  const std::string input =
+      mz::config::GetProfileSeed() + "|" + origin + "|" + name;
+  return base::HexEncodeLower(base::SHA1HashString(input + "|0") +
+                              base::SHA1HashString(input + "|1"))
+      .substr(0, 64);
+}
+
+// static
 bool BrowserFingerprint::ShouldFilterMediaDevice(const std::string& device_type) {
   // 检查是否启用了 MediaDevices 指纹保护
   if (mz::config::GetMediaDevicesMode().empty() || mz::config::GetMediaDevicesMode() == "real") {
@@ -509,7 +522,6 @@ UNSAFE_BUFFERS(void BrowserFingerprint::ApplyWebGLImageNoise(unsigned char* data
         modifications++;
       }
     }
-    MZ_LOG("WebGL readPixels 噪声已应用: " << modifications << "/" << pixel_count << " 像素");
   }
 }
 

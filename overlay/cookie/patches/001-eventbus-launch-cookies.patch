@@ -661,14 +661,13 @@ index ebe402df66e0f..91b95bf5f5dfc 100644
  
          GURL gurl(*url);
          if (!gurl.is_valid()) {
--          MZ_LOG("LaunchConfig: 无效的 URL: " << *url);
-+          MZ_LOG("LaunchConfig.accounts: 无效的 URL: " << *url);
+-          MZ_LOG("LaunchConfig: 账号 URL 无效，跳过");
++          MZ_LOG("LaunchConfig.accounts: 账号 URL 无效，跳过");
            continue;
          }
  
-@@ -527,99 +1117,35 @@ void EventBus::HandleHandshakeResponse(const Message& message) {
- 
-         MZ_LOG("LaunchConfig: 添加账号 " << *username << " @ " << *url);
+@@ -527,98 +1117,34 @@ void EventBus::HandleHandshakeResponse(const Message& message) {
+         account_urls.push_back(gurl);
        }
 +    }
  

@@ -41,6 +41,11 @@ class MzBrowserContext {
   // Shutdown the context (called during browser shutdown)
   void Shutdown();
 
+  // Returns the shared proxy service, creating it if needed: the browser-wide
+  // network context is set up before Initialize() runs. Once created, the
+  // service is never replaced.
+  MzProxyConfigService* GetOrCreateProxyConfigService();
+
   // Get the proxy configuration service
   MzProxyConfigService* proxy_config_service() {
     return proxy_config_service_.get();

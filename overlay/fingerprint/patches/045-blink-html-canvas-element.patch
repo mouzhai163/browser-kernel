@@ -1,8 +1,7 @@
 diff --git a/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc b/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc
-index 922c787b9bd87..b6a1a924f2389 100644
 --- a/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc
 +++ b/third_party/blink/renderer/core/html/canvas/html_canvas_element.cc
-@@ -130,6 +130,7 @@
+@@ -142,6 +142,7 @@
  #include "ui/gfx/geometry/size_conversions.h"
  #include "ui/gfx/geometry/skia_conversions.h"
  #include "v8/include/v8.h"
@@ -10,24 +9,50 @@ index 922c787b9bd87..b6a1a924f2389 100644
  
  namespace blink {
  
-@@ -1305,6 +1306,20 @@ String HTMLCanvasElement::ToDataURLInternal(
+@@ -1422,6 +1423,30 @@
+   return image_bitmap;
+ }
+ 
++namespace {
++
++// MZ: 给导出的快照加 Canvas 指纹噪声，toDataURL 和 toBlob 共用，两者输出才一致。
++// 在副本上改：快照可能与画布缓存共享像素，原地修改会让噪声随调用次数累积。
++scoped_refptr<StaticBitmapImage> ApplyMzCanvasNoise(
++    scoped_refptr<StaticBitmapImage> image) {
++  sk_sp<SkImage> source = image->PaintImageForCurrentFrame().GetSwSkImage();
++  if (!source) {
++    return image;
++  }
++  SkBitmap bitmap;
++  if (!bitmap.tryAllocPixels(source->imageInfo().makeColorType(kN32_SkColorType)) ||
++      !source->readPixels(nullptr, bitmap.pixmap(), 0, 0)) {
++    return image;
++  }
++  mz::fingerprint::BrowserFingerprint::ApplyCanvasNoise(
++      static_cast<unsigned char*>(bitmap.getPixels()),
++      bitmap.computeByteSize());
++  return UnacceleratedStaticBitmapImage::Create(
++      SkImages::RasterFromBitmap(bitmap));
++}
++
++}  // namespace
++
+ String HTMLCanvasElement::ToDataURLInternal(
+     const String& mime_type,
+     const double& quality,
+@@ -1435,6 +1460,7 @@
  
    scoped_refptr<StaticBitmapImage> image_bitmap = Snapshot(source_buffer);
    if (image_bitmap) {
-+    // MZ: 应用 Canvas 指纹噪声
-+    // 需要创建一个可修改的副本
-+    SkBitmap bitmap;
-+    if (image_bitmap->PaintImageForCurrentFrame().GetSwSkImage()->asLegacyBitmap(&bitmap)) {
-+      if (bitmap.getPixels()) {
-+        mz::fingerprint::BrowserFingerprint::ApplyCanvasNoise(
-+            static_cast<unsigned char*>(bitmap.getPixels()),
-+            bitmap.computeByteSize());
-+        // 从修改后的 bitmap 创建新的 StaticBitmapImage
-+        sk_sp<SkImage> sk_image = SkImages::RasterFromBitmap(bitmap);
-+        image_bitmap = UnacceleratedStaticBitmapImage::Create(sk_image);
-+      }
-+    }
-+
++    image_bitmap = ApplyMzCanvasNoise(std::move(image_bitmap));
      std::unique_ptr<ImageDataBuffer> data_buffer =
          ImageDataBuffer::Create(image_bitmap);
      if (!data_buffer)
+@@ -1539,6 +1565,7 @@
+   CanvasAsyncBlobCreator* async_creator = nullptr;
+   scoped_refptr<StaticBitmapImage> image_bitmap = Snapshot(kBackBuffer);
+   if (image_bitmap) {
++    image_bitmap = ApplyMzCanvasNoise(std::move(image_bitmap));
+     auto* options = ImageEncodeOptions::Create();
+     options->setType(ImageEncoderUtils::MimeTypeName(encoding_mime_type));
+     async_creator = MakeGarbageCollected<CanvasAsyncBlobCreator>(

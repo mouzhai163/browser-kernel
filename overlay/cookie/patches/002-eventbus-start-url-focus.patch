@@ -1,0 +1,35 @@
+diff --git a/mz/eventbus/eventbus.cc b/mz/eventbus/eventbus.cc
+--- a/mz/eventbus/eventbus.cc
++++ b/mz/eventbus/eventbus.cc
+@@ -192,6 +192,8 @@ void OpenUrlsWhenBrowserReady(std::vector<GURL> urls,
+     return;
+   }
+ 
++  // 第一个网址放到前台：后台标签页拿不到窗口位置和尺寸，页面读到的 outerWidth 等都是 0
++  bool opened_foreground = false;
+   for (const GURL& url : urls) {
+     if (BrowserAlreadyHasUrl(browser, url)) {
+       MZ_LOG(source << ": 标签页已存在，跳过 " << url.spec());
+@@ -199,7 +201,8 @@ void OpenUrlsWhenBrowserReady(std::vector<GURL> urls,
+     }
+ 
+     MZ_LOG(source << ": 打开标签页 " << url.spec());
+-    chrome::AddTabAt(browser, url, -1, false);
++    chrome::AddTabAt(browser, url, -1, !opened_foreground);
++    opened_foreground = true;
+   }
+ }
+ 
+@@ -936,8 +939,11 @@ void OpenReviewTabWhenReady(int attempts_left) {
+     }
+   }
+ 
++  // 已经有启动网址在前台时不抢焦点，检测页只放在第一个位置
++  content::WebContents* active = browser->tab_strip_model()->GetActiveWebContents();
++  const bool web_page_active = active && active->GetVisibleURL().SchemeIsHTTPOrHTTPS();
+   LOG(INFO) << "[MZ][EventBus] 打开 chrome://review 标签页";
+-  chrome::AddTabAt(browser, GURL("chrome://review/"), 0, true);
++  chrome::AddTabAt(browser, GURL("chrome://review/"), 0, !web_page_active);
+ }
+ 
+ }  // namespace

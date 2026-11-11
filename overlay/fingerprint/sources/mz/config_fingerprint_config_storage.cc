@@ -14,6 +14,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include <optional>
 #include <regex>
 #include <sstream>
 #include <set>
@@ -234,13 +235,11 @@ int g_window_y = 0;
 // ============================================================================
 
 void SetLanguage(const std::string& language) {
-  LOG(INFO) << "[MZ Language] SetLanguage called with: " << language;
   GetLanguageStorage() = language;
 }
 
 std::string GetLanguage() {
   std::string result = GetLanguageStorage();
-  LOG(INFO) << "[MZ Language] GetLanguage returning: " << result;
   return result;
 }
 
@@ -260,10 +259,8 @@ std::vector<std::string> GetLanguageList() {
 
 std::string GetAcceptLanguageHeader() {
   std::string language = GetLanguageStorage();
-  LOG(INFO) << "[MZ Language] GetAcceptLanguageHeader - storage value: " << language;
 
   if (language.empty()) {
-    LOG(INFO) << "[MZ Language] GetAcceptLanguageHeader - language is empty, returning empty";
     return "";
   }
 
@@ -273,12 +270,10 @@ std::string GetAcceptLanguageHeader() {
   if (dash_pos != std::string::npos) {
     std::string base_lang = language.substr(0, dash_pos);
     std::string result = language + "," + base_lang + ";q=0.9";
-    LOG(INFO) << "[MZ Language] GetAcceptLanguageHeader returning: " << result;
     return result;
   }
 
   // 如果没有 "-"，直接返回原语言（如 "en" -> "en"）
-  LOG(INFO) << "[MZ Language] GetAcceptLanguageHeader returning (no dash): " << language;
   return language;
 }
 
@@ -357,8 +352,6 @@ void SetUserAgent(const std::string& user_agent) {
     std::string simplified_version = browser_name + "/" + major_version + ".0.0.0";
     simplified_ua = std::regex_replace(simplified_ua, version_regex, simplified_version);
 
-    LOG(INFO) << "SetUserAgent() - Original version: " << original_full_version
-              << ", Simplified UA: " << simplified_ua;
   }
 
   GetUserAgentStorage() = simplified_ua;
@@ -366,7 +359,6 @@ void SetUserAgent(const std::string& user_agent) {
 
 std::string GetUserAgent() {
   std::string ua = GetUserAgentStorage();
-  LOG(INFO) << "GetUserAgent() called, returning: '" << ua << "' (length: " << ua.length() << ")";
   return ua;
 }
 
@@ -913,119 +905,102 @@ void GetWindowPosition(int* x, int* y) {
 // ============================================================================
 
 std::string ExportAllConfigAsJson() {
-  LOG(INFO) << "[MZ Config Export] ExportAllConfigAsJson called";
-
-  std::string current_language = GetLanguage();
-  LOG(INFO) << "[MZ Config Export] Current language value: " << current_language;
-
-  std::ostringstream json;
-  json << "{";
+  base::DictValue config;
 
   // 网络与定位
-  json << "\"language\":\"" << GetLanguage() << "\",";
-  json << "\"timezone\":\"" << GetTimezone() << "\",";
-  json << "\"geolocation\":\"" << GetGeolocation() << "\",";
-  json << "\"geolocation_prompt\":\"" << GetGeolocationPrompt() << "\",";
-  json << "\"platform\":\"" << GetPlatform() << "\",";
-  json << "\"platform_version\":\"" << GetPlatformVersion() << "\",";
-  json << "\"user_agent\":\"" << GetUserAgent() << "\",";
-  json << "\"original_chrome_version\":\"" << GetOriginalChromeVersion() << "\",";
-  json << "\"webrtc_mode\":\"" << GetWebRTCMode() << "\",";
-  json << "\"webrtc_ip\":\"" << GetWebRTCIP() << "\",";
+  config.Set("language", GetLanguage());
+  config.Set("timezone", GetTimezone());
+  config.Set("geolocation", GetGeolocation());
+  config.Set("geolocation_prompt", GetGeolocationPrompt());
+  config.Set("platform", GetPlatform());
+  config.Set("platform_version", GetPlatformVersion());
+  config.Set("user_agent", GetUserAgent());
+  config.Set("original_chrome_version", GetOriginalChromeVersion());
+  config.Set("webrtc_mode", GetWebRTCMode());
+  config.Set("webrtc_ip", GetWebRTCIP());
 
   // 屏幕与硬件
-  json << "\"resolution\":\"" << GetResolution() << "\",";
-  json << "\"color_depth\":" << GetColorDepth() << ",";
-  json << "\"device_pixel_ratio\":" << GetDevicePixelRatio() << ",";
-  json << "\"max_touch_points\":" << GetMaxTouchPoints() << ",";
-  json << "\"hardware_concurrency\":" << GetHardwareConcurrency() << ",";
-  json << "\"device_memory\":" << GetDeviceMemory() << ",";
+  config.Set("resolution", GetResolution());
+  config.Set("color_depth", GetColorDepth());
+  config.Set("device_pixel_ratio", GetDevicePixelRatio());
+  config.Set("max_touch_points", GetMaxTouchPoints());
+  config.Set("hardware_concurrency", GetHardwareConcurrency());
+  config.Set("device_memory", GetDeviceMemory());
 
   // 浏览器指纹
-  json << "\"canvas_mode\":\"" << GetCanvasMode() << "\",";
-  json << "\"webgl_image_mode\":\"" << GetWebGLImageMode() << "\",";
-  json << "\"webgl_info_mode\":\"" << GetWebGLInfoMode() << "\",";
-  json << "\"webgl_vendor\":\"" << GetWebGLVendor() << "\",";
-  json << "\"webgl_renderer\":\"" << GetWebGLRenderer() << "\",";
-  json << "\"webgpu_mode\":\"" << GetWebGPUMode() << "\",";
-  json << "\"font_mode\":\"" << GetFontMode() << "\",";
+  config.Set("canvas_mode", GetCanvasMode());
+  config.Set("webgl_image_mode", GetWebGLImageMode());
+  config.Set("webgl_info_mode", GetWebGLInfoMode());
+  config.Set("webgl_vendor", GetWebGLVendor());
+  config.Set("webgl_renderer", GetWebGLRenderer());
+  config.Set("webgpu_mode", GetWebGPUMode());
+  config.Set("font_mode", GetFontMode());
 
-  // 导出 font_list 对象
-  std::string font_list_mode = GetFontListMode();
-  std::vector<std::string> font_list = GetFontList();
-  json << "\"font_list\":{";
-  json << "\"mode\":\"" << font_list_mode << "\",";
-  json << "\"fonts\":[";
-  for (size_t i = 0; i < font_list.size(); ++i) {
-    json << "\"" << font_list[i] << "\"";
-    if (i < font_list.size() - 1) {
-      json << ",";
-    }
+  base::ListValue fonts;
+  for (const std::string& font : GetFontList()) {
+    fonts.Append(font);
   }
-  json << "]},";
+  base::DictValue font_list;
+  font_list.Set("mode", GetFontListMode());
+  font_list.Set("fonts", std::move(fonts));
+  config.Set("font_list", std::move(font_list));
 
-  json << "\"profile_seed\":\"" << GetProfileSeed() << "\",";
-  json << "\"audio_mode\":\"" << GetAudioContextMode() << "\",";
-  json << "\"speech_voices_mode\":\"" << GetSpeechVoicesMode() << "\",";
-  json << "\"client_rects_mode\":\"" << GetClientRectsMode() << "\",";
-  json << "\"media_devices_mode\":\"" << GetMediaDevicesMode() << "\",";
+  config.Set("profile_seed", GetProfileSeed());
+  config.Set("audio_mode", GetAudioContextMode());
+  config.Set("speech_voices_mode", GetSpeechVoicesMode());
+  config.Set("client_rects_mode", GetClientRectsMode());
+  config.Set("media_devices_mode", GetMediaDevicesMode());
 
   // 浏览器行为
-  json << "\"do_not_track\":\"" << GetDoNotTrack() << "\",";
-  json << "\"ssl_fingerprint_enabled\":" << (GetSSLFingerprint() ? "true" : "false") << ",";
-  json << "\"port_scan_protection_enabled\":" << (GetPortScanProtection() ? "true" : "false") << ",";
-  json << "\"scan_whitelist\":\"" << GetPortScanWhitelist() << "\",";
+  config.Set("do_not_track", GetDoNotTrack());
+  config.Set("ssl_fingerprint_enabled", GetSSLFingerprint());
+  config.Set("port_scan_protection_enabled", GetPortScanProtection());
+  config.Set("scan_whitelist", GetPortScanWhitelist());
 
   // 设备设置
-  json << "\"device_name\":\"" << GetDeviceName() << "\",";
-  json << "\"device_name_random\":" << (GetDeviceNameRandom() ? "true" : "false") << ",";
-  json << "\"mac_address\":\"" << GetMacAddress() << "\",";
-  json << "\"mac_address_mode\":\"" << GetMacAddressMode() << "\",";
+  config.Set("device_name", GetDeviceName());
+  config.Set("device_name_random", GetDeviceNameRandom());
+  config.Set("mac_address", GetMacAddress());
+  config.Set("mac_address_mode", GetMacAddressMode());
 
   // 窗口设置
-  json << "\"window_size_mode\":\"" << GetWindowSizeMode() << "\",";
+  config.Set("window_size_mode", GetWindowSizeMode());
   int w, h;
   GetWindowSize(&w, &h);
-  json << "\"window_width\":" << w << ",";
-  json << "\"window_height\":" << h << ",";
-  json << "\"window_position_mode\":\"" << GetWindowPositionMode() << "\",";
+  config.Set("window_width", w);
+  config.Set("window_height", h);
+  config.Set("window_position_mode", GetWindowPositionMode());
   int x, y;
   GetWindowPosition(&x, &y);
-  json << "\"window_x\":" << x << ",";
-  json << "\"window_y\":" << y;
+  config.Set("window_x", x);
+  config.Set("window_y", y);
 
-  json << "}";
-  std::string result = json.str();
-  LOG(INFO) << "[MZ Config Export] Exported JSON length: " << result.length() << " bytes";
-  LOG(INFO) << "[MZ Config Export] Exported JSON content: " << result;
-  return result;
+  std::optional<std::string> json = base::WriteJson(config);
+  if (!json) {
+    LOG(ERROR) << "[MZ Config Export] Could not serialize the config";
+    return std::string();
+  }
+  return *json;
 }
 
-void ImportAllConfigFromJson(const std::string& json) {
+bool ImportAllConfigFromJson(const std::string& json) {
   if (json.empty()) {
-    LOG(INFO) << "[MZ Config Import] ImportAllConfigFromJson: empty JSON, skipping";
-    return;
+    LOG(ERROR) << "[MZ Config Import] ImportAllConfigFromJson: empty JSON";
+    return false;
   }
 
-  LOG(INFO) << "[MZ Config Import] ImportAllConfigFromJson: parsing JSON (" << json.length() << " bytes)";
-  LOG(INFO) << "[MZ Config Import] JSON content: " << json;
 
   auto parsed = base::JSONReader::Read(json, base::JSON_PARSE_RFC);
   if (!parsed || !parsed->is_dict()) {
     LOG(ERROR) << "[MZ Config Import] ImportAllConfigFromJson: failed to parse JSON";
-    return;
+    return false;
   }
 
   const base::DictValue& dict = parsed->GetDict();
-  LOG(INFO) << "[MZ Config Import] JSON parsed successfully, dict has " << dict.size() << " entries";
 
   // 网络与定位
   if (const std::string* val = dict.FindString("language")) {
-    LOG(INFO) << "[MZ Config Import] Found language in JSON: " << *val;
     SetLanguage(*val);
-    LOG(INFO) << "[MZ Config Import] SetLanguage called with: " << *val;
-    std::string verify = GetLanguage();
-    LOG(INFO) << "[MZ Config Import] Verify GetLanguage returns: " << verify;
   } else {
     LOG(WARNING) << "[MZ Config Import] No language field found in JSON";
   }
@@ -1034,98 +1009,76 @@ void ImportAllConfigFromJson(const std::string& json) {
   }
   if (const std::string* val = dict.FindString("timezone")) {
     SetTimezone(*val);
-    LOG(INFO) << "Imported timezone: " << *val;
   }
   if (const std::string* val = dict.FindString("geolocation")) {
     SetGeolocation(*val);
-    LOG(INFO) << "Imported geolocation: " << *val;
   }
   if (const std::string* val = dict.FindString("geolocation_prompt")) {
     SetGeolocationPrompt(*val);
-    LOG(INFO) << "Imported geolocation_prompt: " << *val;
   }
   if (const std::string* val = dict.FindString("platform")) {
     SetPlatform(*val);
-    LOG(INFO) << "Imported platform: " << *val;
   }
   if (const std::string* val = dict.FindString("platform_version")) {
     SetPlatformVersion(*val);
-    LOG(INFO) << "Imported platform_version: " << *val;
   }
   // MZ: 先导入原始版本号，再导入 user_agent
   // 这样可以避免 SetUserAgent() 从简化后的 UA 中提取错误的版本号
   if (const std::string* val = dict.FindString("original_chrome_version")) {
     GetOriginalChromeVersionStorage() = *val;
-    LOG(INFO) << "Imported original_chrome_version: " << *val;
   }
   if (const std::string* val = dict.FindString("user_agent")) {
     // 注意：这里传入的是简化后的 UA，但原始版本号已经在上面设置了
     GetUserAgentStorage() = *val;
-    LOG(INFO) << "Imported user_agent: " << *val;
   }
   if (const std::string* val = dict.FindString("webrtc_mode")) {
     SetWebRTCMode(*val);
-    LOG(INFO) << "Imported webrtc_mode: " << *val;
   }
   if (const std::string* val = dict.FindString("webrtc_ip")) {
     SetWebRTCIP(*val);
-    LOG(INFO) << "Imported webrtc_ip: " << *val;
   }
 
   // 屏幕与硬件
   if (const std::string* val = dict.FindString("resolution")) {
     SetResolution(*val);
-    LOG(INFO) << "Imported resolution: " << *val;
   }
   if (auto val = dict.FindInt("color_depth")) {
     SetColorDepth(*val);
-    LOG(INFO) << "Imported color_depth: " << *val;
   }
   if (auto val = dict.FindDouble("device_pixel_ratio")) {
     SetDevicePixelRatio(*val);
-    LOG(INFO) << "Imported device_pixel_ratio: " << *val;
   }
   if (auto val = dict.FindInt("max_touch_points")) {
     SetMaxTouchPoints(*val);
-    LOG(INFO) << "Imported max_touch_points: " << *val;
   }
   if (auto val = dict.FindInt("hardware_concurrency")) {
     SetHardwareConcurrency(*val);
-    LOG(INFO) << "Imported hardware_concurrency: " << *val;
   }
   if (auto val = dict.FindDouble("device_memory")) {
     SetDeviceMemory(*val);
-    LOG(INFO) << "Imported device_memory: " << *val;
   }
 
   // 浏览器指纹
   if (const std::string* val = dict.FindString("canvas_mode")) {
     SetCanvasMode(*val);
-    LOG(INFO) << "Imported canvas_mode: " << *val;
   }
   if (const std::string* val = dict.FindString("webgl_image_mode")) {
     SetWebGLImageMode(*val);
-    LOG(INFO) << "Imported webgl_image_mode: " << *val;
   }
   if (const std::string* val = dict.FindString("webgl_info_mode")) {
     SetWebGLInfoMode(*val);
-    LOG(INFO) << "Imported webgl_info_mode: " << *val;
   }
   if (const std::string* val = dict.FindString("webgl_vendor")) {
     SetWebGLVendor(*val);
-    LOG(INFO) << "Imported webgl_vendor: " << *val;
   }
   if (const std::string* val = dict.FindString("webgl_renderer")) {
     SetWebGLRenderer(*val);
-    LOG(INFO) << "Imported webgl_renderer: " << *val;
   }
   if (const std::string* val = dict.FindString("webgpu_mode")) {
     SetWebGPUMode(*val);
-    LOG(INFO) << "Imported webgpu_mode: " << *val;
   }
   if (const std::string* val = dict.FindString("font_mode")) {
     SetFontMode(*val);
-    LOG(INFO) << "Imported font_mode: " << *val;
   }
 
   // 导入字体列表对象 {"mode": "random", "fonts": ["Arial", ...]}
@@ -1136,7 +1089,6 @@ void ImportAllConfigFromJson(const std::string& json) {
       // 导入 mode
       if (const std::string* mode = font_dict.FindString("mode")) {
         SetFontListMode(*mode);
-        LOG(INFO) << "Imported font_list mode: " << *mode;
       }
 
       // 导入 fonts 数组
@@ -1148,87 +1100,70 @@ void ImportAllConfigFromJson(const std::string& json) {
           }
         }
         SetFontList(fonts);
-        LOG(INFO) << "Imported font_list: " << fonts.size() << " fonts";
       }
     }
   }
 
   if (const std::string* val = dict.FindString("audio_mode")) {
     SetAudioContextMode(*val);
-    LOG(INFO) << "Imported audio_mode: " << *val;
   }
   if (const std::string* val = dict.FindString("speech_voices_mode")) {
     SetSpeechVoicesMode(*val);
-    LOG(INFO) << "Imported speech_voices_mode: " << *val;
   }
   if (const std::string* val = dict.FindString("client_rects_mode")) {
     SetClientRectsMode(*val);
-    LOG(INFO) << "Imported client_rects_mode: " << *val;
   }
   if (const std::string* val = dict.FindString("media_devices_mode")) {
     SetMediaDevicesMode(*val);
-    LOG(INFO) << "Imported media_devices_mode: " << *val;
   }
 
   // 浏览器行为
   if (const std::string* val = dict.FindString("do_not_track")) {
     SetDoNotTrack(*val);
-    LOG(INFO) << "Imported do_not_track: " << *val;
   }
   if (auto val = dict.FindBool("ssl_fingerprint_enabled")) {
     SetSSLFingerprint(*val);
-    LOG(INFO) << "Imported ssl_fingerprint_enabled: " << *val;
   }
   if (auto val = dict.FindBool("port_scan_protection_enabled")) {
     SetPortScanProtection(*val);
-    LOG(INFO) << "Imported port_scan_protection_enabled: " << *val;
   }
   if (const std::string* val = dict.FindString("scan_whitelist")) {
     SetPortScanWhitelist(*val);
-    LOG(INFO) << "Imported scan_whitelist: " << *val;
   }
 
   // 设备设置
   if (const std::string* val = dict.FindString("device_name")) {
     SetDeviceName(*val);
-    LOG(INFO) << "Imported device_name: " << *val;
   }
   if (auto val = dict.FindBool("device_name_random")) {
     SetDeviceNameRandom(*val);
-    LOG(INFO) << "Imported device_name_random: " << *val;
   }
   if (const std::string* val = dict.FindString("mac_address")) {
     SetMacAddress(*val);
-    LOG(INFO) << "Imported mac_address: " << *val;
   }
   if (const std::string* val = dict.FindString("mac_address_mode")) {
     SetMacAddressMode(*val);
-    LOG(INFO) << "Imported mac_address_mode: " << *val;
   }
 
   // 窗口设置
   if (const std::string* val = dict.FindString("window_size_mode")) {
     SetWindowSizeMode(*val);
-    LOG(INFO) << "Imported window_size_mode: " << *val;
   }
   if (auto w = dict.FindInt("window_width")) {
     if (auto h = dict.FindInt("window_height")) {
       SetWindowSize(*w, *h);
-      LOG(INFO) << "Imported window_size: " << *w << "x" << *h;
     }
   }
   if (const std::string* val = dict.FindString("window_position_mode")) {
     SetWindowPositionMode(*val);
-    LOG(INFO) << "Imported window_position_mode: " << *val;
   }
   if (auto x = dict.FindInt("window_x")) {
     if (auto y = dict.FindInt("window_y")) {
       SetWindowPosition(*x, *y);
-      LOG(INFO) << "Imported window_position: " << *x << "," << *y;
     }
   }
 
-  LOG(INFO) << "ImportAllConfigFromJson: completed successfully";
+  return true;
 }
 
 }  // namespace config
