@@ -32,8 +32,6 @@
 021-net-build-gn.patch
 022-net-network-interfaces-win.patch
 023-net-port-util.patch
-024-net-ssl-client-socket-impl.patch
-025-net-url-request-http-job.patch
 
 # Services
 026-services-network-context.patch
@@ -51,7 +49,6 @@
 037-blink-navigator-base.patch
 038-blink-local-dom-window.patch
 039-blink-navigator-device-memory.patch
-040-blink-navigator-id.patch
 041-blink-navigator-language.patch
 042-blink-navigator-ua.patch
 043-blink-screen.patch
@@ -90,3 +87,6 @@
 072-blink-media-values.patch
 073-content-client-hints-device-memory.patch
 074-chrome-external-provider-no-registry.patch
+075-content-devtools-http-token.patch
+076-components-component-updater-no-update-checks.patch
+077-net-tcp-client-socket-mz-local-ports.patch

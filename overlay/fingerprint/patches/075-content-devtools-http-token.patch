@@ -1,0 +1,176 @@
+diff --git a/content/browser/devtools/devtools_http_handler.cc b/content/browser/devtools/devtools_http_handler.cc
+--- a/content/browser/devtools/devtools_http_handler.cc
++++ b/content/browser/devtools/devtools_http_handler.cc
+@@ -15,6 +15,7 @@
+ 
+ #include "base/command_line.h"
+ #include "base/compiler_specific.h"
++#include "base/environment.h"
+ #include "base/files/file_util.h"
+ #include "base/functional/bind.h"
+ #include "base/functional/callback_helpers.h"
+@@ -24,8 +25,11 @@
+ #include "base/memory/raw_ptr.h"
+ #include "base/memory/ref_counted_memory.h"
+ #include "base/message_loop/message_pump_type.h"
++#include "base/no_destructor.h"
+ #include "base/strings/escape.h"
++#include "base/strings/strcat.h"
+ #include "base/strings/string_number_conversions.h"
++#include "base/strings/string_split.h"
+ #include "base/strings/string_util.h"
+ #include "base/strings/string_view_util.h"
+ #include "base/strings/stringprintf.h"
+@@ -116,6 +120,75 @@ constexpr net::NetworkTrafficAnnotationTag
+           "Not implemented, only used in Devtools and is behind a switch."
+       })");
+ 
++// MZ: 调试端口的访问令牌，由软件启动内核时通过环境变量传入。没有设置时不校验。
++constexpr char kMzDebugTokenEnvVar[] = "MZ_DEBUG_TOKEN";
++constexpr std::string_view kMzDebugTokenParam = "mz_token=";
++
++// 读取后从环境里清掉，否则之后启动的程序（原生消息宿主、打开下载文件等）会继承令牌。
++std::string MzTakeDebugTokenFromEnvironment() {
++  std::unique_ptr<base::Environment> environment = base::Environment::Create();
++  std::string token =
++      environment->GetVar(kMzDebugTokenEnvVar).value_or(std::string());
++  environment->UnSetVar(kMzDebugTokenEnvVar);
++  return token;
++}
++
++const std::string& MzDebugToken() {
++  static const base::NoDestructor<std::string> token(
++      MzTakeDebugTokenFromEnvironment());
++  return *token;
++}
++
++// 拼到给客户端的 WebSocket 地址后面，客户端照着地址连接就带上了令牌。
++std::string MzDebugTokenQuery() {
++  return MzDebugToken().empty()
++             ? std::string()
++             : base::StrCat({"?", kMzDebugTokenParam, MzDebugToken()});
++}
++
++bool MzDebugTokenMatches(std::string_view candidate) {
++  const std::string& expected = MzDebugToken();
++  if (candidate.size() != expected.size()) {
++    return false;
++  }
++  unsigned char difference = 0;
++  for (size_t i = 0; i < expected.size(); ++i) {
++    difference |= static_cast<unsigned char>(candidate[i] ^ expected[i]);
++  }
++  return difference == 0;
++}
++
++// 校验请求路径里的令牌并把它去掉，后面的处理看到的还是原来的路径。
++bool MzConsumeDebugToken(std::string& path) {
++  if (MzDebugToken().empty()) {
++    return true;
++  }
++  const size_t query_pos = path.find('?');
++  if (query_pos == std::string::npos) {
++    return false;
++  }
++  bool accepted = false;
++  std::vector<std::string_view> kept;
++  for (std::string_view part : base::SplitStringPiece(
++           std::string_view(path).substr(query_pos + 1), "&",
++           base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
++    if (part.starts_with(kMzDebugTokenParam)) {
++      accepted = MzDebugTokenMatches(part.substr(kMzDebugTokenParam.size()));
++    } else {
++      kept.push_back(part);
++    }
++  }
++  if (!accepted) {
++    return false;
++  }
++  std::string stripped = path.substr(0, query_pos);
++  if (!kept.empty()) {
++    stripped += "?" + base::JoinString(kept, "&");
++  }
++  path = std::move(stripped);
++  return true;
++}
++
+ bool RequestIsSafeToServe(const net::HttpServerRequestInfo& info) {
+   // For browser-originating requests, serve only those that are coming from
+   // pages loaded off localhost or fixed IPs.
+@@ -457,14 +530,21 @@ static std::string_view GetMimeType(std::string_view filename) {
+   return "text/plain";
+ }
+ 
+-void ServerWrapper::OnHttpRequest(int connection_id,
+-                                  const net::HttpServerRequestInfo& info) {
+-  if (!RequestIsSafeToServe(info)) {
++void ServerWrapper::OnHttpRequest(
++    int connection_id,
++    const net::HttpServerRequestInfo& incoming_info) {
++  if (!RequestIsSafeToServe(incoming_info)) {
+     Send500(connection_id,
+             "Host header is specified and is not an IP address or localhost.");
+     return;
+   }
+ 
++  net::HttpServerRequestInfo info = incoming_info;
++  if (!MzConsumeDebugToken(info.path)) {
++    server_->Send404(connection_id, kDevtoolsHttpHandlerTrafficAnnotation);
++    return;
++  }
++
+   server_->SetSendBufferSize(connection_id, kSendBufferSizeForDevTools);
+ 
+   if (base::StartsWith(info.path, "/json", base::CompareCase::SENSITIVE)) {
+@@ -513,13 +593,19 @@ void ServerWrapper::OnHttpRequest(int connection_id,
+ 
+ void ServerWrapper::OnWebSocketRequest(
+     int connection_id,
+-    const net::HttpServerRequestInfo& request) {
+-  if (!RequestIsSafeToServe(request)) {
++    const net::HttpServerRequestInfo& incoming_request) {
++  if (!RequestIsSafeToServe(incoming_request)) {
+     Send500(connection_id,
+             "Host header is specified and is not an IP address or localhost.");
+     return;
+   }
+ 
++  net::HttpServerRequestInfo request = incoming_request;
++  if (!MzConsumeDebugToken(request.path)) {
++    server_->Send404(connection_id, kDevtoolsHttpHandlerTrafficAnnotation);
++    return;
++  }
++
+   GetUIThreadTaskRunner({})->PostTask(
+       FROM_HERE, base::BindOnce(&DevToolsHttpHandler::OnWebSocketRequest,
+                                 handler_, connection_id, request));
+@@ -623,7 +709,8 @@ void DevToolsHttpHandler::OnJsonRequest(
+     std::string host = info.GetHeaderValue("host");
+     version.Set(
+         kTargetWebSocketDebuggerUrlField,
+-        base::StringPrintf("ws://%s%s", host.c_str(), browser_guid_.c_str()));
++        base::StringPrintf("ws://%s%s%s", host.c_str(), browser_guid_.c_str(),
++                           MzDebugTokenQuery().c_str()));
+ #if BUILDFLAG(IS_ANDROID)
+     version.Set("Android-Package",
+                 base::android::apk_info::host_package_name());
+@@ -905,6 +992,7 @@ DevToolsHttpHandler::DevToolsHttpHandler(
+     const base::FilePath& debug_frontend_dir,
+     DevToolsAgentHost::RemoteDebuggingServerMode mode)
+     : mode_(mode), delegate_(delegate) {
++  MzDebugToken();  // 尽早读取并清除环境变量
+   browser_guid_ =
+       delegate_->IsBrowserTargetDiscoverable()
+           ? kBrowserUrlPrefix
+@@ -1052,8 +1140,9 @@ base::DictValue DevToolsHttpHandler::SerializeDescriptor(
+     dictionary.Set(kTargetFaviconUrlField, favicon_url.spec());
+ 
+   dictionary.Set(kTargetWebSocketDebuggerUrlField,
+-                 base::StringPrintf("ws://%s%s%s", host.c_str(), kPageUrlPrefix,
+-                                    id.c_str()));
++                 base::StringPrintf("ws://%s%s%s%s", host.c_str(),
++                                    kPageUrlPrefix, id.c_str(),
++                                    MzDebugTokenQuery().c_str()));
+   dictionary.Set(kTargetDevtoolsFrontendUrlField,
+                  GetFrontendURLInternal(agent_host, id, host));
+ 

@@ -1,10 +1,13 @@
 """命令行入口：按 driver/order.txt 执行标准浏览器内核流水线。"""
 import argparse
 import json
+import os
+from pathlib import Path
 
 from . import runner
 from .config import get_chromium_src, get_repo_root
 from .contract import load_manifest, resolve_capabilities, validate_port
+from .patching import FAILURES_ENV
 
 
 def _print_validation(repo_root, as_json: bool) -> int:
@@ -98,6 +101,12 @@ def main() -> None:
         default=None,
         help="Chromium 输出目录（相对 Chromium 根），如 out/Default、out/Release；用于 deploy 时写入 args.gn 等。默认 out/Default 或环境变量 MZ_OUT_DIR",
     )
+    parser.add_argument(
+        "--failures-json",
+        metavar="FILE",
+        default=None,
+        help="遇到失败继续执行，把所有失败写入 FILE；只要有失败，退出码就是 1",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("apply", help="按 driver/order.txt 对每个单元执行 run.py apply")
@@ -134,6 +143,10 @@ def main() -> None:
 
     chromium_src = get_chromium_src()
     out_dir = getattr(args, "out_dir", None)
+    failures_path = Path(args.failures_json).resolve() if args.failures_json else None
+    if failures_path:
+        failures_path.write_text("[]", encoding="utf-8")
+        os.environ[FAILURES_ENV] = str(failures_path)
 
     if args.command == "apply":
         runner.run_phase(repo_root, chromium_src, "apply", out_dir)
@@ -146,6 +159,14 @@ def main() -> None:
     elif args.command == "apply-and-prepare":
         runner.run_phase(repo_root, chromium_src, "apply_deploy", out_dir)
         print("Apply and prepare done. Next: gn gen and build in Chromium.")
+
+    if failures_path:
+        failures = json.loads(failures_path.read_text(encoding="utf-8"))
+        print(f"==== {len(failures)} failure(s), listed in {failures_path}")
+        for failure in failures:
+            print(f" - {failure['label']}")
+        if failures:
+            raise SystemExit(1)
 
 
 if __name__ == "__main__":

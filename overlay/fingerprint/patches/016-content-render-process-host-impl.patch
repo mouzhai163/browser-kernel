@@ -1,5 +1,4 @@
 diff --git a/content/browser/renderer_host/render_process_host_impl.cc b/content/browser/renderer_host/render_process_host_impl.cc
-index 6ad685197a92c..917e4ecd6cba9 100644
 --- a/content/browser/renderer_host/render_process_host_impl.cc
 +++ b/content/browser/renderer_host/render_process_host_impl.cc
 @@ -8,6 +8,8 @@
@@ -11,7 +10,7 @@ index 6ad685197a92c..917e4ecd6cba9 100644
  #include <atomic>
  #include <limits>
  #include <list>
-@@ -2047,12 +2049,27 @@ bool RenderProcessHostImpl::Init() {
+@@ -2033,12 +2035,22 @@
    uint64_t trace_id = base::Token::CreateRandom().high();
    TRACE_EVENT("navigation", "RenderProcessHostImpl::Init",
                perfetto::Flow::Global(trace_id));
@@ -21,14 +20,9 @@ index 6ad685197a92c..917e4ecd6cba9 100644
 +  if (user_agent.empty()) {
 +    user_agent = GetContentClient()->browser()->GetUserAgent();
 +  }
-+  LOG(INFO) << "RenderProcessHostImpl::Init() using UserAgent: " << user_agent;
 +
 +  // MZ: 导出所有指纹配置为 JSON，传递给 Renderer 进程
 +  std::string fingerprint_config_json = mz::config::ExportAllConfigAsJson();
-+  LOG(INFO) << "[MZ Config] RenderProcessHostImpl::Init() - Exporting config for Renderer process";
-+  LOG(INFO) << "[MZ Config] RenderProcessHostImpl::Init() - Config size: "
-+            << fingerprint_config_json.size() << " bytes";
-+  LOG(INFO) << "[MZ Config] RenderProcessHostImpl::Init() - Config content: " << fingerprint_config_json;
 +
    GetRendererInterface()->InitializeRenderer(
 -      GetContentClient()->browser()->GetUserAgent(),

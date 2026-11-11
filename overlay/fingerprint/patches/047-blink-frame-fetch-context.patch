@@ -31,7 +31,7 @@ diff --git a/third_party/blink/renderer/core/loader/frame_fetch_context.cc b/thi
    }
  
    if (ShouldSendClientHint(*policy, resource_origin,
-@@ -1357,6 +1362,19 @@
+@@ -1357,6 +1362,16 @@
    }
    LocalFrame* frame = document_->GetFrame();
    DCHECK(frame);
@@ -39,12 +39,9 @@ diff --git a/third_party/blink/renderer/core/loader/frame_fetch_context.cc b/thi
 +  // Check mz configuration first
 +  std::string mz_language = mz::config::GetLanguage();
 +  if (!mz_language.empty()) {
-+    LOG(INFO) << "[MZ Language] FrameFetchContext::GetReducedAcceptLanguage - using mz config: " << mz_language;
 +    String language_str = String::FromUtf8(mz_language.c_str());
 +    String expanded_language = network_utils::ExpandLanguageList(language_str);
-+    LOG(INFO) << "[MZ Language] FrameFetchContext::GetReducedAcceptLanguage - ExpandLanguageList returned: " << expanded_language;
 +    String result = network_utils::GenerateAcceptLanguageHeader(expanded_language);
-+    LOG(INFO) << "[MZ Language] FrameFetchContext::GetReducedAcceptLanguage - GenerateAcceptLanguageHeader returned: " << result;
 +    return result;
 +  }
 +

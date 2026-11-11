@@ -1,8 +1,7 @@
 diff --git a/chrome/browser/net/profile_network_context_service.cc b/chrome/browser/net/profile_network_context_service.cc
-index 9427aec558c19..a612c6fd9320b 100644
 --- a/chrome/browser/net/profile_network_context_service.cc
 +++ b/chrome/browser/net/profile_network_context_service.cc
-@@ -99,6 +99,7 @@
+@@ -102,6 +102,7 @@
  #include "services/network/public/mojom/network_context.mojom.h"
  #include "services/network/public/mojom/network_service.mojom.h"
  #include "third_party/blink/public/common/features.h"
@@ -10,15 +9,15 @@ index 9427aec558c19..a612c6fd9320b 100644
  
  #if BUILDFLAG(IS_CHROMEOS)
  #include "ash/constants/ash_features.h"
-@@ -193,6 +194,7 @@ std::string ComputeAcceptLanguageFromPref(const std::string& language_pref) {
+@@ -215,6 +216,7 @@
+       net::HttpUtil::ExpandLanguageList(language_pref);
    return net::HttpUtil::GenerateAcceptLanguageHeader(accept_languages_str);
  }
- 
 +
+ 
  // Tests allowing ambient authentication with default credentials based on the
  // profile type.
- bool IsAmbientAuthAllowedForProfile(Profile* profile) {
-@@ -650,11 +652,18 @@ void ProfileNetworkContextService::DisableQuicIfNotAllowed() {
+@@ -702,11 +704,18 @@
  
  void ProfileNetworkContextService::UpdateAcceptLanguage() {
    const std::string accept_language = ComputeAcceptLanguage();
@@ -37,13 +36,10 @@ index 9427aec558c19..a612c6fd9320b 100644
  }
  
  void ProfileNetworkContextService::OnThirdPartyCookieBlockingChanged(
-@@ -742,6 +742,23 @@ void ProfileNetworkContextService::OnThirdPartyCookieBlockingChanged(
-       });
+@@ -719,6 +728,20 @@
  }
  
  std::string ProfileNetworkContextService::ComputeAcceptLanguage() const {
-+  LOG(INFO) << "[MZ Language] ComputeAcceptLanguage called";
-+
 +  // 优先使用 mz 配置
 +  auto* config_manager = mz::fingerprint::FingerprintConfigManager::GetInstance();
 +  if (config_manager->IsConfigLoaded()) {
@@ -53,7 +49,6 @@ index 9427aec558c19..a612c6fd9320b 100644
 +      // 生成 Accept-Language 格式：fr-FR,fr;q=0.9
 +      std::string language_code = mz_language.substr(0, mz_language.find('-'));
 +      std::string accept_lang = mz_language + "," + language_code + ";q=0.9";
-+      LOG(INFO) << "[MZ Language] ComputeAcceptLanguage returning mz config: " << accept_lang;
 +      return accept_lang;
 +    }
 +  }

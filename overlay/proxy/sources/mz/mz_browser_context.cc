@@ -38,6 +38,13 @@ MzBrowserContext::MzBrowserContext() = default;
 
 MzBrowserContext::~MzBrowserContext() = default;
 
+MzProxyConfigService* MzBrowserContext::GetOrCreateProxyConfigService() {
+  if (!proxy_config_service_) {
+    proxy_config_service_ = std::make_unique<MzProxyConfigService>();
+  }
+  return proxy_config_service_.get();
+}
+
 void MzBrowserContext::Initialize() {
   if (initialized_) {
     LOG(WARNING) << "MzBrowserContext already initialized";
@@ -47,7 +54,7 @@ void MzBrowserContext::Initialize() {
   LOG(INFO) << "Initializing MzBrowserContext";
 
   // Create proxy configuration service
-  proxy_config_service_ = std::make_unique<MzProxyConfigService>();
+  GetOrCreateProxyConfigService();
   network_context_configurator_ = std::make_unique<NetworkContextConfigurator>();
 
   // Create proxy message handler

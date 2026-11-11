@@ -10,7 +10,7 @@ diff --git a/third_party/blink/renderer/modules/mediastream/media_devices.cc b/t
  
  #include <algorithm>
  #include <utility>
-@@ -1496,7 +1498,71 @@
+@@ -1496,7 +1498,87 @@
    }
  
    ReportCompletedEnumerateDevices(result_contains_nonempty_input_device_ids);
@@ -48,27 +48,43 @@ diff --git a/third_party/blink/renderer/modules/mediastream/media_devices.cc b/t
 +        break;
 +      }
 +    }
-+    auto make_placeholder = [permitted](const char* id, const char* label,
++    // Chrome 给页面的 deviceId / groupId 是按来源生成的 64 位十六进制串，占位设备用同样的形式，
++    // 由环境种子决定，同一环境、同一来源下保持稳定。
++    const std::string origin = ExecutionContext::From(script_state)
++                                   ->GetSecurityOrigin()
++                                   ->ToString()
++                                   .Utf8();
++    auto placeholder_id = [&origin](const char* name) {
++      return String::FromUtf8(
++          mz::fingerprint::BrowserFingerprint::GetPlaceholderMediaDeviceId(
++              name, origin));
++    };
++    auto make_placeholder = [permitted](const String& id, const char* label,
++                                        const String& group_id,
 +                                        mojom::blink::MediaDeviceType type) {
 +      return MakeGarbageCollected<MediaDeviceInfo>(
-+          permitted ? String(id) : g_empty_string,
++          permitted ? id : g_empty_string,
 +          permitted ? String(label) : g_empty_string,
-+          permitted ? String("mz-default-group") : g_empty_string, type);
++          permitted ? group_id : g_empty_string, type);
 +    };
++    const String audio_group_id = placeholder_id("audio-group");
 +    if (!audio_input) {
 +      audio_input = make_placeholder(
-+          "default", "Default - Microphone (Realtek High Definition Audio)",
-+          mojom::blink::MediaDeviceType::kMediaAudioInput);
++          String("default"),
++          "Default - Microphone (Realtek High Definition Audio)",
++          audio_group_id, mojom::blink::MediaDeviceType::kMediaAudioInput);
 +    }
 +    if (!video_input) {
 +      video_input = make_placeholder(
-+          "mz-camera", "Integrated Camera",
++          placeholder_id("camera"), "Integrated Camera (04f2:b6d0)",
++          placeholder_id("camera-group"),
 +          mojom::blink::MediaDeviceType::kMediaVideoInput);
 +    }
 +    if (!audio_output) {
 +      audio_output = make_placeholder(
-+          "default", "Default - Speakers (Realtek High Definition Audio)",
-+          mojom::blink::MediaDeviceType::kMediaAudioOutput);
++          String("default"),
++          "Default - Speakers (Realtek High Definition Audio)",
++          audio_group_id, mojom::blink::MediaDeviceType::kMediaAudioOutput);
 +    }
 +    MediaDeviceInfoVector filtered_devices;
 +    filtered_devices.push_back(audio_input);

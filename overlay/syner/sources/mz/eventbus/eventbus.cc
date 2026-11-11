@@ -137,8 +137,6 @@ bool EventBus::SendRequest(Topic topic, std::vector<uint8_t> data) {
   }
 
   auto message = Message::Request(topic, std::move(data));
-  LOG(INFO) << "EventBus: Sending request, topic=" << static_cast<int>(topic)
-            << ", msg_id=" << message.msg_id;
 
   return transport_->Send(message);
 }
@@ -152,8 +150,6 @@ bool EventBus::SendEvent(Topic topic, std::vector<uint8_t> data) {
   }
 
   auto message = Message::Event(topic, std::move(data));
-  LOG(INFO) << "EventBus: Sending event, topic=" << static_cast<int>(topic)
-            << ", msg_id=" << message.msg_id;
 
   return transport_->Send(message);
 }
@@ -215,9 +211,6 @@ void EventBus::OnDisconnected() {
 void EventBus::OnMessageReceived(Message message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  LOG(INFO) << "EventBus: Received message, topic=" << static_cast<int>(message.topic)
-            << ", type=" << static_cast<int>(message.msg_type)
-            << ", msg_id=" << message.msg_id;
 
   // 检查是否是握手响应
   if (!handshake_complete_ &&
